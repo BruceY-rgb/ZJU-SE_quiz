@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>软件工程刷题</title>
+<style>
+  :root {
+    --bg: #f5f5f5; --card-bg: #fff; --text: #333; --text-secondary: #666;
+    --primary: #4f46e5; --primary-hover: #4338ca; --success: #16a34a; --danger: #dc2626;
+    --border: #e5e7eb; --option-bg: #f9fafb; --option-hover: #f3f4f6;
+    --option-selected: #eef2ff; --option-selected-border: #4f46e5;
+    --shadow: 0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05);
+    --radius: 12px; --star: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+    display: flex; justify-content: center; padding: 20px;
+  }
+  .container { width: 100%; max-width: 760px; }
+
+  /* Setup */
+  .setup-panel {
+    background: var(--card-bg); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 32px; text-align: center;
+  }
+  .setup-panel h1 { font-size: 1.8rem; margin-bottom: 8px; }
+  .setup-panel .subtitle { color: var(--text-secondary); margin-bottom: 24px; font-size: .95rem; }
+  .file-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px 20px;
+    margin-bottom: 20px; cursor: pointer; transition: border-color .2s, background .2s;
+  }
+  .file-zone:hover { border-color: var(--primary); background: #fafaff; }
+  .file-zone.loaded { border-color: var(--success); border-style: solid; background: #f0fdf4; }
+  .file-zone .icon { font-size: 2.5rem; margin-bottom: 8px; }
+  .chapter-row { display: flex; gap: 12px; align-items: center; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .chapter-row select, .chapter-row input {
+    padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: .95rem; background: var(--card-bg); min-width: 100px;
+  }
+  .chapter-row input { width: 80px; text-align: center; }
+  .chapter-row .chapter-select { min-width: 200px; max-width: 280px; }
+  .quick-actions { display: flex; gap: 10px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+  .quick-actions .btn { padding: 8px 18px; font-size: .9rem; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 12px 32px;
+    border: none; border-radius: 10px; font-size: 1rem; font-weight: 600;
+    cursor: pointer; transition: background .2s, transform .1s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
+  .btn-outline { background: var(--card-bg); color: var(--primary); border: 2px solid var(--primary); }
+  .btn-outline:hover { background: var(--option-selected); }
+  .btn-sm { padding: 6px 14px; font-size: .85rem; border-radius: 8px; }
+  .btn-star { background: none; border: none; font-size: 1.4rem; cursor: pointer; padding: 4px 8px; transition: transform .15s; line-height: 1; }
+  .btn-star:hover { transform: scale(1.2); }
+  .btn-star.active { color: var(--star); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { opacity: .9; }
+  .btn-ai { background: linear-gradient(135deg,#7c3aed,#4f46e5); color: #fff; border: none; }
+  .btn-ai:hover { opacity: .9; }
+  .btn-ai:disabled { background: #9ca3af; cursor: wait; }
+
+  /* AI Analysis */
+  .ai-panel {
+    margin-top: 12px; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border); display: none;
+  }
+  .ai-panel.show { display: block; }
+  .ai-panel .ai-header {
+    background: linear-gradient(135deg,#f5f3ff,#eef2ff);
+    padding: 10px 16px; font-weight: 600; font-size: .9rem;
+    display: flex; align-items: center; gap: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ai-panel .ai-body {
+    padding: 14px 16px; font-size: .92rem; line-height: 1.7;
+    white-space: pre-wrap; color: var(--text);
+  }
+  .ai-panel .ai-body.loading {
+    color: var(--text-secondary); font-style: italic;
+  }
+
+  /* Nav Tabs */
+  .nav-tabs {
+    display: flex; gap: 4px; background: var(--card-bg); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 4px; margin-bottom: 16px;
+  }
+  .nav-tab {
+    flex: 1; text-align: center; padding: 10px 12px; border-radius: 10px;
+    font-weight: 600; font-size: .9rem; cursor: pointer; transition: all .15s;
+    color: var(--text-secondary); border: none; background: none;
+  }
+  .nav-tab:hover { color: var(--text); background: var(--option-bg); }
+  .nav-tab.active { background: var(--primary); color: #fff; }
+
+  /* Quiz */
+  .quiz-panel { display: none; }
+  .quiz-header {
+    background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 12px 20px; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .quiz-header .left { display: flex; align-items: center; gap: 10px; }
+  .chapter-badge {
+    background: var(--option-selected); color: var(--primary);
+    padding: 4px 12px; border-radius: 20px; font-size: .85rem; font-weight: 600;
+  }
+  .counter { color: var(--text-secondary); font-size: .9rem; }
+  .progress-bar { height: 6px; background: var(--border); border-radius: 3px; margin-bottom: 16px; overflow: hidden; }
+  .progress-bar .fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width .3s; }
+
+  /* Question Card */
+  .question-card {
+    background: var(--card-bg); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 24px; margin-bottom: 16px;
+  }
+  .question-card .topic-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .question-card .topic { font-size: 1.05rem; font-weight: 500; line-height: 1.7; margin-bottom: 20px; color: var(--text); flex: 1; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px;
+    border: 2px solid var(--border); border-radius: 10px; cursor: pointer;
+    transition: all .15s; background: var(--option-bg); font-size: .95rem; line-height: 1.5;
+  }
+  .option:hover { background: var(--option-hover); }
+  .option.selected { background: var(--option-selected); border-color: var(--option-selected-border); }
+  .option.correct { background: #f0fdf4; border-color: var(--success); }
+  .option.incorrect { background: #fef2f2; border-color: var(--danger); }
+  .option.revealed-correct { background: #f0fdf4; border-color: var(--success); }
+  .option .letter {
+    flex-shrink: 0; width: 28px; height: 28px; display: flex; align-items: center;
+    justify-content: center; border-radius: 50%; font-weight: 700; font-size: .85rem;
+    background: var(--border); color: var(--text-secondary); transition: all .15s;
+  }
+  .option.selected .letter { background: var(--primary); color: #fff; }
+  .option.correct .letter { background: var(--success); color: #fff; }
+  .option.incorrect .letter { background: var(--danger); color: #fff; }
+  .option.revealed-correct .letter { background: var(--success); color: #fff; }
+
+  .answer-feedback {
+    margin-top: 16px; padding: 12px 16px; border-radius: 8px;
+    font-weight: 600; font-size: .95rem; display: none;
+  }
+  .answer-feedback.show { display: block; }
+  .answer-feedback.correct { background: #f0fdf4; color: #15803d; }
+  .answer-feedback.wrong { background: #fef2f2; color: #b91c1c; }
+
+  .btn-row { display: flex; gap: 12px; margin-top: 16px; }
+  .btn-row .btn { flex: 1; }
+
+  /* List Panel (wrong + bookmarks) */
+  .list-panel { display: none; }
+  .list-panel .list-header {
+    background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 16px 20px; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .list-item {
+    background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 14px 18px; margin-bottom: 8px; border: 1px solid transparent;
+    transition: border-color .15s, transform .15s, box-shadow .15s;
+  }
+  .list-item.interactive { cursor: pointer; }
+  .list-item.interactive:hover, .list-item.interactive:focus {
+    border-color: var(--primary); transform: translateY(-1px); box-shadow: var(--shadow-lg); outline: none;
+  }
+  .list-item .item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .list-item .chapter-tag {
+    display: inline-block; background: var(--border); padding: 2px 8px;
+    border-radius: 4px; font-size: .78rem; color: var(--text-secondary);
+  }
+  .list-item .topic-text { font-size: .95rem; font-weight: 500; line-height: 1.5; margin-bottom: 6px; }
+  .list-item .answer-line { font-size: .85rem; color: var(--text-secondary); }
+  .list-item .answer-line .correct-ans { color: var(--success); font-weight: 600; }
+  .list-item .answer-line .wrong-ans { color: var(--danger); }
+  .list-item .detail-hint { color: var(--primary); font-size: .8rem; font-weight: 600; }
+  .list-item .item-actions { margin-top: 8px; display: flex; gap: 8px; justify-content: space-between; align-items: center; }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+
+  /* Report */
+  .report-panel { display: none; }
+  .report-panel .score-circle {
+    width: 140px; height: 140px; border-radius: 50%; background: var(--card-bg);
+    box-shadow: var(--shadow-lg); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; margin: 0 auto 24px;
+  }
+  .report-panel .stats {
+    background: var(--card-bg); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 24px; margin-bottom: 24px;
+  }
+  .wrong-item {
+    background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 16px 20px; margin-bottom: 10px; border-left: 4px solid var(--danger);
+  }
+  .wrong-item .chapter-tag {
+    display: inline-block; background: var(--border); padding: 2px 8px;
+    border-radius: 4px; font-size: .8rem; color: var(--text-secondary); margin-bottom: 6px;
+  }
+  .wrong-item .q-topic { font-weight: 500; margin-bottom: 4px; font-size: .95rem; line-height: 1.5; }
+  .wrong-item .q-answer { color: var(--success); font-size: .9rem; }
+  .wrong-item .q-answer .your { color: var(--danger); }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 600px) {
+    .question-card { padding: 16px; }
+    .setup-panel { padding: 20px; }
+    .nav-tab { font-size: .8rem; padding: 8px 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="app">
+
+  <!-- ===== Setup ===== -->
+  <div class="setup-panel" id="setupPanel">
+    <h1>软件工程刷题</h1>
+    <p class="subtitle">ZJU Software Engineering — Multiple Choice</p>
+    <div class="file-zone" id="fileZone" onclick="document.getElementById('fileInput').click()">
+      <div class="icon" id="fileIcon">📂</div>
+      <div id="fileHint">点击选择 tiku.json</div>
+      <div id="fileInfo" style="font-size:.85rem;color:var(--text-secondary);margin-top:4px;"></div>
+    </div>
+    <input type="file" id="fileInput" accept=".json" style="display:none" onchange="handleFile(event)">
+
+    <div class="chapter-row">
+      <select id="chapterMode" onchange="updateChapterUI()">
+        <option value="all">全部章节</option>
+        <option value="single">单章</option>
+        <option value="range">前 N 章</option>
+      </select>
+      <span id="chapterInputWrap" class="hidden">
+        <select id="chapterSelect" class="chapter-select"></select>
+      </span>
+      <span id="chapterRangeWrap" class="hidden">
+        <input type="number" id="chapterRange" value="4" min="1" max="36"> <span style="color:var(--text-secondary)">章</span>
+      </span>
+    </div>
+
+    <button class="btn btn-primary" id="startBtn" disabled onclick="startQuiz()">▶ 开始刷题</button>
+
+    <div class="quick-actions" id="quickActions" style="display:none;">
+      <button class="btn btn-outline btn-sm" onclick="showWrongList()">📋 错题本</button>
+      <button class="btn btn-outline btn-sm" onclick="showBookmarkList()">⭐ 收藏夹</button>
+    </div>
+  </div>
+
+  <!-- ===== Main Content (quiz + lists) ===== -->
+  <div id="mainContent" style="display:none;">
+
+    <!-- Nav Tabs -->
+    <div class="nav-tabs" id="navTabs">
+      <button class="nav-tab active" data-tab="quiz" onclick="switchTab('quiz')">📝 刷题</button>
+      <button class="nav-tab" data-tab="wrongs" onclick="switchTab('wrongs')">📋 错题 <span id="wrongBadge" style="font-size:.75rem;"></span></button>
+      <button class="nav-tab" data-tab="bookmarks" onclick="switchTab('bookmarks')">⭐ 收藏 <span id="bmBadge" style="font-size:.75rem;"></span></button>
+    </div>
+
+    <!-- Quiz Tab -->
+    <div class="quiz-panel" id="quizPanel" style="display:block;">
+      <div class="quiz-header">
+        <div class="left">
+          <span class="chapter-badge" id="chapterBadge">Ch 1</span>
+          <span class="counter" id="counter">1 / 30</span>
+        </div>
+        <button class="btn btn-outline btn-sm" id="finishBtn" onclick="handleHeaderAction()">结束</button>
+      </div>
+      <div class="progress-bar"><div class="fill" id="progressFill" style="width:0%"></div></div>
+      <div class="question-card">
+        <div class="topic-row">
+          <div class="topic" id="questionTopic"></div>
+          <button class="btn-star" id="bookmarkBtn" onclick="toggleBookmark()" title="收藏此题">☆</button>
+        </div>
+        <div class="options" id="optionsContainer"></div>
+        <div class="answer-feedback" id="feedback"></div>
+        <div class="btn-row" style="margin-top:8px;display:none;" id="aiBtnRow">
+          <button class="btn btn-ai btn-sm" id="aiBtn" onclick="requestAIAnalysis()">🤖 AI 分析</button>
+        </div>
+        <div class="ai-panel" id="aiPanel">
+          <div class="ai-header">🤖 AI 分析</div>
+          <div class="ai-body" id="aiBody"></div>
+        </div>
+        <div class="btn-row" id="btnRow">
+          <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()" disabled>提交答案</button>
+          <button class="btn btn-primary hidden" id="nextBtn" onclick="nextQuestion()">下一题 →</button>
+          <button class="btn btn-outline hidden" id="returnListBtn" onclick="returnToList()">返回列表</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wrong List Tab -->
+    <div class="list-panel" id="wrongListPanel">
+      <div class="list-header">
+        <strong>📋 错题本</strong>
+        <div>
+          <button class="btn btn-danger btn-sm" onclick="clearWrongList()">清空</button>
+          <button class="btn btn-outline btn-sm" onclick="exportWrong()">📥 导出</button>
+        </div>
+      </div>
+      <div id="wrongListContainer"></div>
+    </div>
+
+    <!-- Bookmark List Tab -->
+    <div class="list-panel" id="bookmarkListPanel">
+      <div class="list-header">
+        <strong>⭐ 收藏夹</strong>
+        <div>
+          <button class="btn btn-danger btn-sm" onclick="clearBookmarks()">清空</button>
+          <button class="btn btn-outline btn-sm" onclick="exportBookmarks()">📥 导出</button>
+        </div>
+      </div>
+      <div id="bookmarkListContainer"></div>
+    </div>
+  </div>
+
+  <!-- ===== Report ===== -->
+  <div class="report-panel" id="reportPanel">
+    <div class="score-circle">
+      <div style="font-weight:800;font-size:2.2rem;" id="reportScore">0%</div>
+      <div style="color:var(--text-secondary);font-size:.85rem;">正确率</div>
+    </div>
+    <div class="stats">
+      <div style="display:flex;justify-content:space-around;text-align:center;">
+        <div><div style="font-size:1.5rem;font-weight:700;" id="statTotal">0</div><div style="color:var(--text-secondary);font-size:.85rem;">总题数</div></div>
+        <div><div style="font-size:1.5rem;font-weight:700;color:#16a34a;" id="statCorrect">0</div><div style="color:var(--text-secondary);font-size:.85rem;">正确</div></div>
+        <div><div style="font-size:1.5rem;font-weight:700;color:#dc2626;" id="statWrong">0</div><div style="color:var(--text-secondary);font-size:.85rem;">错误</div></div>
+      </div>
+    </div>
+    <div id="wrongList" style="margin-bottom:20px;"></div>
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="exportWrong()">📥 导出错题 JSON</button>
+      <button class="btn btn-primary" onclick="restart()">🔄 再来一轮</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===== Persistent Storage =====
+const STORAGE_KEY_WRONG = 'se_wrong_list';
+const STORAGE_KEY_BOOKMARK = 'se_bookmarks';
+const STORAGE_KEY_BANK = 'se_question_bank';
+const STORAGE_KEY_SETTINGS = 'se_quiz_settings';
+const STORAGE_KEY_SESSION = 'se_active_session';
+
+function loadPersisted(key, fallback = []) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw === null ? fallback : JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+}
+function savePersisted(key, data) {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    return true;
+  } catch (err) {
+    console.warn('保存本地数据失败：', key, err);
+    return false;
+  }
+}
+function removePersisted(key) {
+  localStorage.removeItem(key);
+}
+
+function normalizeAnswer(answer) {
+  return String(answer || '').toUpperCase().replace(/[^A-Z]/g, '').split('').sort().join('');
+}
+
+function makeKey(q) {
+  return String(q.topic || '') + '|' + normalizeAnswer(q.answer);
+}
+
+const QUESTION_FIXES = {
+  '5. Which of the following can contribute to team toxicity?': {
+    answer: 'ACD'
+  },
+  '10. Which of the following is not one of the principles of good coding?': {
+    answer: 'D',
+    options: [
+      'A. Create unit tests before you begin coding',
+      'B. Create unit tests before you begin coding',
+      'C. Refactor the code after you complete the first coding pass',
+      'D. Write self-documenting code, not program documentation'
+    ]
+  },
+  '1. Requirements engineering is a generic process that does not vary from one software project to another.': {
+    answer: 'B'
+  },
+  '11. User stories are complete descriptions the user needs and include the non-functional requirements for a software increment.': {
+    answer: 'B'
+  },
+  '18. In requirements validation the requirements model is reviewed to ensure its technical feasibility.': {
+    answer: 'A'
+  }
+};
+
+function applyQuestionFixes(bank) {
+  for (const questions of Object.values(bank)) {
+    questions.forEach(q => {
+      const fix = QUESTION_FIXES[q.topic];
+      if (fix) Object.assign(q, fix);
+    });
+  }
+  return bank;
+}
+
+function normalizeStoredItem(raw) {
+  if (!raw || !raw.topic || !raw.answer) return null;
+  const item = {
+    _key: raw._key || makeKey(raw),
+    chapter: String(raw.chapter || '?'),
+    topic: String(raw.topic),
+    answer: normalizeAnswer(raw.answer) || String(raw.answer),
+    options: Array.isArray(raw.options) ? raw.options.map(String) : []
+  };
+  if (raw.userAnswer) item.userAnswer = normalizeAnswer(raw.userAnswer) || String(raw.userAnswer);
+  if (raw.wrongCount) item.wrongCount = Number(raw.wrongCount) || 1;
+  if (raw.lastWrongAt) item.lastWrongAt = raw.lastWrongAt;
+  return item;
+}
+
+function normalizeStoredList(list) {
+  const result = [];
+  const indexByKey = new Map();
+  (Array.isArray(list) ? list : []).forEach(raw => {
+    const item = normalizeStoredItem(raw);
+    if (!item) return;
+    if (indexByKey.has(item._key)) {
+      const index = indexByKey.get(item._key);
+      const old = result[index];
+      result[index] = {
+        ...old,
+        ...item,
+        wrongCount: (Number(old.wrongCount) || 1) + (Number(item.wrongCount) || 1)
+      };
+    } else {
+      indexByKey.set(item._key, result.length);
+      result.push(item);
+    }
+  });
+  return result;
+}
+
+let wrongHistory = normalizeStoredList(loadPersisted(STORAGE_KEY_WRONG, []));
+let bookmarks = normalizeStoredList(loadPersisted(STORAGE_KEY_BOOKMARK, []));
+savePersisted(STORAGE_KEY_WRONG, wrongHistory);
+savePersisted(STORAGE_KEY_BOOKMARK, bookmarks);
+
+// ===== Session State =====
+let questionBank = null;
+let questions = [];
+let currentIdx = 0;
+let sessionIncorrect = [];   // current session's wrong answers
+let sessionAnswers = {};
+let sessionSelections = {};
+let selectedOptions = new Set();
+let answered = false;
+let totalAnswered = 0;
+let currentTab = 'quiz';
+let reviewContext = null;
+let reviewReturnState = null;
+let sessionRestored = false;
+
+// ===== File Handling =====
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const bank = JSON.parse(ev.target.result);
+      setQuestionBank(bank, file.name, true);
+    } catch(err) {
+      alert('JSON 格式错误，请选择正确的题库文件');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function validateQuestionBank(bank) {
+  if (typeof bank !== 'object' || bank === null) return false;
+  const keys = Object.keys(bank);
+  return keys.length > 0 && keys.every(key => Array.isArray(bank[key]));
+}
+
+function setQuestionBank(bank, sourceLabel = 'tiku.json', persist = true) {
+  if (!validateQuestionBank(bank)) throw new Error('Invalid question bank');
+  questionBank = applyQuestionFixes(bank);
+
+  const totalQ = Object.values(questionBank).reduce((s, a) => s + a.length, 0);
+  document.getElementById('fileZone').classList.add('loaded');
+  document.getElementById('fileIcon').textContent = '✅';
+  document.getElementById('fileHint').textContent = '题库已加载';
+  document.getElementById('fileInfo').textContent =
+    Object.keys(questionBank).length + ' 章 · ' + totalQ + ' 道题 · ' + sourceLabel;
+  document.getElementById('startBtn').disabled = false;
+
+  populateChapterSelector();
+  restoreSettings();
+  document.getElementById('quickActions').style.display = 'flex';
+  updateBadges();
+
+  if (persist) savePersisted(STORAGE_KEY_BANK, questionBank);
+  restoreSessionIfAvailable();
+}
+
+function populateChapterSelector() {
+  const sel = document.getElementById('chapterSelect');
+  sel.innerHTML = '';
+  const keys = Object.keys(questionBank).sort((a, b) => Number(a) - Number(b));
+  keys.forEach(ch => {
+    const qs = questionBank[ch];
+    const opt = document.createElement('option');
+    opt.value = ch;
+    opt.textContent = '第 ' + ch + ' 章 (' + qs.length + ' 题)';
+    sel.appendChild(opt);
+  });
+  document.getElementById('chapterRange').max = keys.length;
+}
+
+async function loadDefaultQuestionBank() {
+  const storedBank = loadPersisted(STORAGE_KEY_BANK, null);
+  if (validateQuestionBank(storedBank)) {
+    setQuestionBank(storedBank, '已恢复上次题库', false);
+  }
+
+  document.getElementById('fileHint').textContent = questionBank ? '题库已加载' : '正在自动加载 tiku.json...';
+  try {
+    const resp = await fetch('tiku.json', { cache: 'no-store' });
+    if (!resp.ok) throw new Error('load failed');
+    const bank = await resp.json();
+    setQuestionBank(bank, 'tiku.json', true);
+  } catch (err) {
+    if (!questionBank) {
+      document.getElementById('fileHint').textContent = '点击选择 tiku.json';
+      document.getElementById('fileInfo').textContent = '直接打开 HTML 时可手动选择题库文件';
+    }
+  }
+}
+
+// ===== Chapter UI =====
+function updateChapterUI(shouldSave = true) {
+  const mode = document.getElementById('chapterMode').value;
+  document.getElementById('chapterInputWrap').classList.toggle('hidden', mode !== 'single');
+  document.getElementById('chapterRangeWrap').classList.toggle('hidden', mode !== 'range');
+  if (shouldSave) saveSettings();
+}
+
+function saveSettings() {
+  savePersisted(STORAGE_KEY_SETTINGS, {
+    mode: document.getElementById('chapterMode').value,
+    chapter: document.getElementById('chapterSelect').value,
+    range: document.getElementById('chapterRange').value
+  });
+}
+
+function restoreSettings() {
+  const settings = loadPersisted(STORAGE_KEY_SETTINGS, {});
+  const modeEl = document.getElementById('chapterMode');
+  const chapterEl = document.getElementById('chapterSelect');
+  const rangeEl = document.getElementById('chapterRange');
+
+  if (settings.mode && Array.from(modeEl.options).some(opt => opt.value === settings.mode)) {
+    modeEl.value = settings.mode;
+  }
+  if (settings.chapter && Array.from(chapterEl.options).some(opt => opt.value === settings.chapter)) {
+    chapterEl.value = settings.chapter;
+  }
+  if (settings.range) {
+    rangeEl.value = Math.max(Number(rangeEl.min), Math.min(Number(rangeEl.max), Number(settings.range) || 1));
+  }
+  updateChapterUI(false);
+}
+
+// ===== Start Quiz =====
+function startQuiz() {
+  if (!questionBank) return;
+  const mode = document.getElementById('chapterMode').value;
+  let raw = [];
+
+  if (mode === 'single') {
+    const ch = document.getElementById('chapterSelect').value;
+    if (questionBank[ch]) raw = questionBank[ch].map(q => [ch, q]);
+  } else if (mode === 'range') {
+    const n = parseInt(document.getElementById('chapterRange').value) || 4;
+    const keys = Object.keys(questionBank).sort((a,b) => Number(a)-Number(b));
+    for (let i = 0; i < Math.min(n, keys.length); i++) {
+      const ch = keys[i];
+      questionBank[ch].forEach(q => raw.push([ch, q]));
+    }
+  } else {
+    for (const [ch, qs] of Object.entries(questionBank)) {
+      qs.forEach(q => raw.push([ch, q]));
+    }
+  }
+
+  if (raw.length === 0) {
+    alert('当前章节没有题目');
+    return;
+  }
+
+  for (let i = raw.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [raw[i], raw[j]] = [raw[j], raw[i]];
+  }
+
+  questions = raw;
+  currentIdx = 0;
+  sessionIncorrect = [];
+  sessionAnswers = {};
+  sessionSelections = {};
+  totalAnswered = 0;
+  reviewContext = null;
+  reviewReturnState = null;
+  saveSettings();
+
+  document.getElementById('setupPanel').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('reportPanel').style.display = 'none';
+  switchTab('quiz');
+  renderQuestion();
+  saveSessionState();
+}
+
+// ===== Render Question =====
+function renderQuestion() {
+  if (currentIdx >= questions.length) { showReport(); return; }
+
+  const [chapter, q] = questions[currentIdx];
+  const qKey = makeKey(q);
+  const savedAnswer = sessionAnswers[qKey];
+  const pendingAnswer = sessionSelections[qKey];
+  selectedOptions = reviewContext
+    ? answerToIndexes(reviewContext.userAnswer || '')
+    : savedAnswer
+      ? answerToIndexes(savedAnswer.userAnswer)
+      : answerToIndexes(pendingAnswer);
+  answered = Boolean(savedAnswer && !reviewContext);
+
+  document.getElementById('chapterBadge').textContent = 'Ch ' + chapter;
+  document.getElementById('counter').textContent = reviewContext ? '题目详情' : (currentIdx + 1) + ' / ' + questions.length;
+  document.getElementById('progressFill').style.width = reviewContext ? '100%' : (currentIdx / questions.length * 100) + '%';
+  document.getElementById('finishBtn').textContent = reviewContext ? '返回' : '结束';
+
+  let topic = q.topic.replace(/^\d+\.\s*/, '');
+  document.getElementById('questionTopic').textContent = topic;
+
+  syncBookmarkButton(q);
+
+  // Options
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'option';
+    if (selectedOptions.has(i)) div.classList.add('selected');
+    const letter = document.createElement('span');
+    letter.className = 'letter';
+    letter.textContent = String.fromCharCode(65 + i);
+    const text = document.createElement('span');
+    text.textContent = String(opt).replace(/^[A-E]\.\s*/, '');
+    div.appendChild(letter);
+    div.appendChild(text);
+    div.addEventListener('click', () => toggleOption(i, div));
+    container.appendChild(div);
+  });
+
+  const fb = document.getElementById('feedback');
+  fb.className = 'answer-feedback';
+  fb.textContent = '';
+  document.getElementById('submitBtn').classList.remove('hidden');
+  document.getElementById('nextBtn').classList.add('hidden');
+  document.getElementById('returnListBtn').classList.add('hidden');
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('aiBtnRow').style.display = 'none';
+  document.getElementById('aiPanel').classList.remove('show');
+  document.getElementById('aiBody').textContent = '';
+
+  if (reviewContext) {
+    selectedOptions = answerToIndexes(reviewContext.userAnswer || '');
+    revealQuestionResult(q, reviewContext.userAnswer || '', 'review');
+    document.getElementById('returnListBtn').classList.remove('hidden');
+    document.getElementById('aiBtnRow').style.display = 'flex';
+  } else if (savedAnswer) {
+    revealQuestionResult(q, savedAnswer.userAnswer, 'answered');
+  } else {
+    updateSubmitState();
+  }
+}
+
+function toggleOption(idx, el) {
+  if (answered) return;
+  if (selectedOptions.has(idx)) { selectedOptions.delete(idx); el.classList.remove('selected'); }
+  else { selectedOptions.add(idx); el.classList.add('selected'); }
+  persistCurrentSelection();
+  updateSubmitState();
+}
+
+function updateSubmitState() {
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = answered || selectedOptions.size === 0 || Boolean(reviewContext);
+}
+
+function answerToIndexes(answer) {
+  const indexes = new Set();
+  normalizeAnswer(answer).split('').forEach(letter => {
+    const idx = letter.charCodeAt(0) - 65;
+    if (idx >= 0) indexes.add(idx);
+  });
+  return indexes;
+}
+
+function buildStoredQuestion(chapter, q, extra = {}) {
+  return {
+    _key: makeKey(q),
+    chapter: String(chapter || '?'),
+    topic: String(q.topic),
+    answer: normalizeAnswer(q.answer) || String(q.answer),
+    options: Array.isArray(q.options) ? q.options.map(String) : [],
+    ...extra
+  };
+}
+
+function selectedAnswerString() {
+  return [...selectedOptions].sort().map(i => String.fromCharCode(65 + i)).join('');
+}
+
+function persistCurrentSelection() {
+  if (reviewContext || !questions[currentIdx]) return;
+  const [, q] = questions[currentIdx];
+  const answer = selectedAnswerString();
+  if (answer) sessionSelections[makeKey(q)] = answer;
+  else delete sessionSelections[makeKey(q)];
+  saveSessionState();
+}
+
+function revealQuestionResult(q, userAnswer, mode = 'answered') {
+  const normalizedUser = normalizeAnswer(userAnswer);
+  const correctAnswer = normalizeAnswer(q.answer);
+  const opts = document.getElementById('optionsContainer').children;
+
+  for (let i = 0; i < opts.length; i++) {
+    const letter = String.fromCharCode(65 + i);
+    opts[i].style.pointerEvents = 'none';
+    if (correctAnswer.includes(letter)) {
+      opts[i].classList.add(normalizedUser.includes(letter) ? 'correct' : 'revealed-correct');
+    } else if (normalizedUser.includes(letter)) {
+      opts[i].classList.add('incorrect');
+    }
+  }
+
+  answered = true;
+  const fb = document.getElementById('feedback');
+  if (mode === 'review') {
+    if (normalizedUser) {
+      const isCorrect = normalizedUser === correctAnswer;
+      fb.className = 'answer-feedback ' + (isCorrect ? 'correct' : 'wrong') + ' show';
+      fb.textContent = '上次答案：' + normalizedUser + '   正确答案：' + correctAnswer;
+    } else {
+      fb.className = 'answer-feedback correct show';
+      fb.textContent = '正确答案：' + correctAnswer;
+    }
+    document.getElementById('submitBtn').classList.add('hidden');
+    document.getElementById('nextBtn').classList.add('hidden');
+    return;
+  }
+
+  const isCorrect = normalizedUser === correctAnswer;
+  fb.className = 'answer-feedback ' + (isCorrect ? 'correct' : 'wrong') + ' show';
+  fb.textContent = isCorrect ? '✅ 正确！' : '❌ 你的答案：' + normalizedUser + '   正确答案：' + correctAnswer;
+  document.getElementById('submitBtn').classList.add('hidden');
+  document.getElementById('nextBtn').classList.remove('hidden');
+  document.getElementById('aiBtnRow').style.display = 'flex';
+}
+
+// ===== Bookmark =====
+function toggleBookmark() {
+  if (!questions[currentIdx]) return;
+  const [chapter, q] = questions[currentIdx];
+  const bmKey = makeKey(q);
+  const idx = bookmarks.findIndex(b => b._key === bmKey);
+  if (idx >= 0) {
+    bookmarks.splice(idx, 1);
+  } else {
+    bookmarks.push(buildStoredQuestion(chapter, q));
+  }
+  savePersisted(STORAGE_KEY_BOOKMARK, bookmarks);
+  updateBadges();
+  syncBookmarkButton(q);
+  if (currentTab === 'bookmarks') renderBookmarkList();
+}
+
+function syncBookmarkButton(q) {
+  const bmKey = makeKey(q);
+  const isBm = bookmarks.some(b => b._key === bmKey);
+  const bmBtn = document.getElementById('bookmarkBtn');
+  bmBtn.textContent = isBm ? '★' : '☆';
+  bmBtn.classList.toggle('active', isBm);
+  bmBtn.title = isBm ? '取消收藏' : '收藏此题';
+}
+
+// ===== Submit Answer =====
+function submitAnswer() {
+  if (selectedOptions.size === 0) return;
+  if (answered) return;
+  totalAnswered++;
+
+  const [chapter, q] = questions[currentIdx];
+  const userAnswer = selectedAnswerString();
+  const correctAnswer = normalizeAnswer(q.answer);
+  const isCorrect = userAnswer === correctAnswer;
+
+  revealQuestionResult(q, userAnswer, 'answered');
+  sessionAnswers[makeKey(q)] = { userAnswer, isCorrect, answeredAt: new Date().toISOString() };
+  delete sessionSelections[makeKey(q)];
+
+  if (!isCorrect) {
+    const errItem = buildStoredQuestion(chapter, q, {
+      userAnswer,
+      wrongCount: 1,
+      lastWrongAt: new Date().toISOString()
+    });
+    sessionIncorrect.push(errItem);
+    upsertWrongItem(errItem);
+  }
+
+  document.getElementById('progressFill').style.width = ((currentIdx + 1) / questions.length * 100) + '%';
+  document.getElementById('aiPanel').classList.remove('show');
+  document.getElementById('aiBody').textContent = '';
+  updateBadges();
+  saveSessionState();
+}
+
+function upsertWrongItem(item) {
+  const idx = wrongHistory.findIndex(w => w._key === item._key);
+  if (idx >= 0) {
+    wrongHistory[idx] = {
+      ...wrongHistory[idx],
+      ...item,
+      wrongCount: (Number(wrongHistory[idx].wrongCount) || 1) + 1
+    };
+  } else {
+    wrongHistory.push(item);
+  }
+  savePersisted(STORAGE_KEY_WRONG, wrongHistory);
+}
+
+// ===== Next Question =====
+function nextQuestion() {
+  if (reviewContext) { returnToList(); return; }
+  currentIdx++;
+  if (currentIdx >= questions.length) { showReport(); }
+  else {
+    renderQuestion();
+    saveSessionState();
+  }
+}
+
+// ===== Tab Switching =====
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('quizPanel').style.display = tab === 'quiz' ? 'block' : 'none';
+  document.getElementById('wrongListPanel').style.display = tab === 'wrongs' ? 'block' : 'none';
+  document.getElementById('bookmarkListPanel').style.display = tab === 'bookmarks' ? 'block' : 'none';
+
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+
+  if (tab === 'wrongs') renderWrongList();
+  if (tab === 'bookmarks') renderBookmarkList();
+  if (!reviewContext) saveSessionState();
+}
+
+function showWrongList() {
+  document.getElementById('setupPanel').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('reportPanel').style.display = 'none';
+  switchTab('wrongs');
+}
+function showBookmarkList() {
+  document.getElementById('setupPanel').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('reportPanel').style.display = 'none';
+  switchTab('bookmarks');
+}
+
+// ===== Render Wrong List =====
+function renderWrongList() {
+  const container = document.getElementById('wrongListContainer');
+  if (wrongHistory.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>暂无错题，继续保持！</p></div>';
+    return;
+  }
+  // Show newest first
+  const reversed = [...wrongHistory].reverse();
+  container.innerHTML = reversed.map((item, i) => {
+    const shortTopic = item.topic.replace(/^\d+\.\s*/, '');
+    const optStr = (item.options || []).map(o => o.replace(/^[A-E]\.\s*/, '')).join(' | ');
+    const wrongCount = Number(item.wrongCount) > 1 ? ' · 错 ' + item.wrongCount + ' 次' : '';
+    return '<div class="list-item interactive" role="button" tabindex="0" data-index="' + i + '">'
+      + '<div class="item-header">'
+        + '<span class="chapter-tag">Ch ' + (item.chapter || '?') + '</span>'
+        + '<span style="color:var(--text-secondary);font-size:.8rem;">#' + (reversed.length - i) + wrongCount + '</span>'
+      + '</div>'
+      + '<div class="topic-text">' + escapeHtml(shortTopic) + '</div>'
+      + '<div style="font-size:.82rem;color:var(--text-secondary);margin-bottom:4px;">' + escapeHtml(optStr) + '</div>'
+      + '<div class="answer-line">'
+        + '你的答案：<span class="wrong-ans">' + (item.userAnswer || '?') + '</span> '
+        + '正确答案：<span class="correct-ans">' + item.answer + '</span>'
+      + '</div>'
+      + '<div class="item-actions">'
+        + '<span class="detail-hint">查看详情</span>'
+        + '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); deleteWrongItem(' + i + ')">删除</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+  bindListItemClicks(container, 'wrongs');
+}
+
+function deleteWrongItem(displayIdx) {
+  const realIdx = wrongHistory.length - 1 - displayIdx;
+  wrongHistory.splice(realIdx, 1);
+  savePersisted(STORAGE_KEY_WRONG, wrongHistory);
+  updateBadges();
+  renderWrongList();
+}
+
+function clearWrongList() {
+  if (!confirm('确定要清空所有错题记录吗？此操作不可撤销。')) return;
+  wrongHistory = [];
+  savePersisted(STORAGE_KEY_WRONG, wrongHistory);
+  updateBadges();
+  renderWrongList();
+}
+
+// ===== Render Bookmark List =====
+function renderBookmarkList() {
+  const container = document.getElementById('bookmarkListContainer');
+  if (bookmarks.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">⭐</div><p>还没有收藏题目</p><p style="font-size:.85rem;">刷题时点击 ☆ 即可收藏</p></div>';
+    return;
+  }
+  const reversed = [...bookmarks].reverse();
+  container.innerHTML = reversed.map((item, i) => {
+    const shortTopic = item.topic.replace(/^\d+\.\s*/, '');
+    const optStr = (item.options || []).map(o => o.replace(/^[A-E]\.\s*/, '')).join(' | ');
+    return '<div class="list-item interactive" role="button" tabindex="0" data-index="' + i + '">'
+      + '<div class="item-header">'
+        + '<span class="chapter-tag">Ch ' + (item.chapter || '?') + '</span>'
+        + '<span style="color:var(--text-secondary);font-size:.8rem;">#' + (reversed.length - i) + '</span>'
+      + '</div>'
+      + '<div class="topic-text">' + escapeHtml(shortTopic) + '</div>'
+      + '<div style="font-size:.82rem;color:var(--text-secondary);margin-bottom:4px;">' + escapeHtml(optStr) + '</div>'
+      + '<div class="answer-line">正确答案：<span class="correct-ans">' + escapeHtml(item.answer) + '</span></div>'
+      + '<div class="item-actions">'
+        + '<span class="detail-hint">查看详情</span>'
+        + '<button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); removeBookmark(' + i + ')">取消收藏</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+  bindListItemClicks(container, 'bookmarks');
+}
+
+function removeBookmark(displayIdx) {
+  const realIdx = bookmarks.length - 1 - displayIdx;
+  bookmarks.splice(realIdx, 1);
+  savePersisted(STORAGE_KEY_BOOKMARK, bookmarks);
+  updateBadges();
+  renderBookmarkList();
+  if (questions[currentIdx]) syncBookmarkButton(questions[currentIdx][1]);
+}
+
+function clearBookmarks() {
+  if (!confirm('确定要清空所有收藏吗？此操作不可撤销。')) return;
+  bookmarks = [];
+  savePersisted(STORAGE_KEY_BOOKMARK, bookmarks);
+  updateBadges();
+  renderBookmarkList();
+}
+
+// ===== Badges =====
+function updateBadges() {
+  const wb = document.getElementById('wrongBadge');
+  const bb = document.getElementById('bmBadge');
+  wb.textContent = wrongHistory.length > 0 ? '(' + wrongHistory.length + ')' : '';
+  bb.textContent = bookmarks.length > 0 ? '(' + bookmarks.length + ')' : '';
+}
+
+// ===== Detail Review =====
+function bindListItemClicks(container, source) {
+  container.querySelectorAll('.list-item.interactive').forEach(item => {
+    const displayIdx = Number(item.dataset.index);
+    item.addEventListener('click', () => viewSavedQuestion(source, displayIdx));
+    item.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        viewSavedQuestion(source, displayIdx);
+      }
+    });
+  });
+}
+
+function captureQuizState() {
+  return {
+    questions,
+    currentIdx,
+    sessionIncorrect,
+    sessionAnswers: { ...sessionAnswers },
+    sessionSelections: { ...sessionSelections },
+    totalAnswered,
+    currentTab
+  };
+}
+
+function restoreQuizState(state) {
+  if (!state) return;
+  questions = state.questions || [];
+  currentIdx = state.currentIdx || 0;
+  sessionIncorrect = state.sessionIncorrect || [];
+  sessionAnswers = state.sessionAnswers || {};
+  sessionSelections = state.sessionSelections || {};
+  totalAnswered = state.totalAnswered || 0;
+}
+
+function viewSavedQuestion(source, displayIdx) {
+  const list = source === 'bookmarks' ? bookmarks : wrongHistory;
+  const realIdx = list.length - 1 - displayIdx;
+  const item = list[realIdx];
+  if (!item) return;
+
+  if (!reviewContext) reviewReturnState = captureQuizState();
+  reviewContext = { source, userAnswer: item.userAnswer || '' };
+  questions = [[item.chapter || '?', item]];
+  currentIdx = 0;
+
+  document.getElementById('setupPanel').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('reportPanel').style.display = 'none';
+  switchTab('quiz');
+  renderQuestion();
+}
+
+function returnToList() {
+  const target = reviewContext && reviewContext.source === 'bookmarks' ? 'bookmarks' : 'wrongs';
+  reviewContext = null;
+  restoreQuizState(reviewReturnState);
+  reviewReturnState = null;
+  document.getElementById('setupPanel').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('reportPanel').style.display = 'none';
+  switchTab(target);
+}
+
+function handleHeaderAction() {
+  if (reviewContext) returnToList();
+  else showReport();
+}
+
+// ===== Keyboard =====
+document.addEventListener('keydown', function(e) {
+  if (currentTab !== 'quiz') return;
+  const quizVisible = document.getElementById('quizPanel').style.display !== 'none';
+  if (!quizVisible) return;
+
+  if (!answered && /^[1-5]$/.test(e.key)) {
+    const idx = Number(e.key) - 1;
+    const opts = document.getElementById('optionsContainer').children;
+    if (idx < opts.length) toggleOption(idx, opts[idx]);
+  }
+  if (!answered && /^[a-eA-E]$/.test(e.key)) {
+    const idx = e.key.toUpperCase().charCodeAt(0) - 65;
+    const opts = document.getElementById('optionsContainer').children;
+    if (idx < opts.length) toggleOption(idx, opts[idx]);
+  }
+  if (!answered && e.key === 'Enter' && selectedOptions.size > 0) { e.preventDefault(); submitAnswer(); }
+  if (answered && !reviewContext && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); nextQuestion(); }
+  if (reviewContext && e.key === 'Escape') { e.preventDefault(); returnToList(); }
+});
+
+// ===== Report =====
+function showReport() {
+  if (reviewContext) { returnToList(); return; }
+  document.getElementById('setupPanel').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'none';
+  document.getElementById('reportPanel').style.display = 'block';
+
+  const total = totalAnswered;
+  const correct = total - sessionIncorrect.length;
+  const pct = total > 0 ? Math.round(correct / total * 100) : 0;
+
+  document.getElementById('reportScore').textContent = pct + '%';
+  document.getElementById('reportScore').style.color = total === 0 ? '#666' : pct >= 80 ? '#16a34a' : pct >= 60 ? '#ca8a04' : '#dc2626';
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statCorrect').textContent = correct;
+  document.getElementById('statWrong').textContent = sessionIncorrect.length;
+
+  const container = document.getElementById('wrongList');
+  if (total === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);font-size:1rem;font-weight:600;">本轮还没有答题</div>';
+  } else if (sessionIncorrect.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--success);font-size:1.2rem;font-weight:600;">🎉 全对！</div>';
+  } else {
+    container.innerHTML = '<h3 style="margin-bottom:12px;">本轮错题回顾</h3>'
+      + sessionIncorrect.map((item, i) =>
+        '<div class="wrong-item">'
+          + '<span class="chapter-tag">Ch ' + (item.chapter || '?') + '</span>'
+          + '<div class="q-topic">' + (i + 1) + '. ' + escapeHtml(item.topic.replace(/^\d+\.\s*/, '')) + '</div>'
+          + '<div class="q-answer">你的答案：<span class="your">' + item.userAnswer + '</span> &nbsp; 正确答案：<strong>' + item.answer + '</strong></div>'
+        + '</div>'
+      ).join('');
+  }
+
+  savePersisted(STORAGE_KEY_WRONG, wrongHistory);
+  clearSessionState();
+  updateBadges();
+}
+
+// ===== AI Analysis =====
+async function requestAIAnalysis() {
+  const [chapter, q] = questions[currentIdx];
+  const panel = document.getElementById('aiPanel');
+  const body = document.getElementById('aiBody');
+  const btn = document.getElementById('aiBtn');
+
+  panel.classList.add('show');
+  body.className = 'ai-body loading';
+  body.textContent = '正在分析...';
+  btn.disabled = true;
+
+  try {
+    const apiUrl = ['localhost', '127.0.0.1'].includes(location.hostname)
+      ? 'http://localhost:8765/api/analyze'
+      : '/api/analyze';
+    const resp = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic: q.topic, options: q.options, answer: q.answer })
+    });
+    const data = await resp.json();
+    if (data.error) {
+      body.textContent = '❌ ' + data.error;
+    } else {
+      body.className = 'ai-body';
+      body.textContent = data.analysis;
+    }
+  } catch (e) {
+    body.className = 'ai-body';
+    body.textContent = '❌ 无法连接到 AI 服务器。请确认已运行 python3 server.py';
+  }
+  btn.disabled = false;
+}
+
+// ===== Export =====
+function exportWrong() {
+  const list = wrongHistory.length > 0 ? wrongHistory : sessionIncorrect;
+  if (list.length === 0) { alert('没有错题可导出'); return; }
+  downloadJSON(list, '错题');
+}
+
+function exportBookmarks() {
+  if (bookmarks.length === 0) { alert('没有收藏可导出'); return; }
+  downloadJSON(bookmarks, '收藏');
+}
+
+function downloadJSON(data, prefix) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  a.href = url; a.download = prefix + '_' + ts + '.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ===== Restart =====
+function restart() {
+  clearSessionState();
+  reviewContext = null;
+  reviewReturnState = null;
+  questions = [];
+  currentIdx = 0;
+  sessionIncorrect = [];
+  sessionAnswers = {};
+  sessionSelections = {};
+  totalAnswered = 0;
+  document.getElementById('setupPanel').style.display = '';
+  document.getElementById('mainContent').style.display = 'none';
+  document.getElementById('reportPanel').style.display = 'none';
+}
+
+// ===== Session Persistence =====
+function saveSessionState() {
+  if (reviewContext || !questions.length) return;
+  savePersisted(STORAGE_KEY_SESSION, {
+    questions,
+    currentIdx,
+    sessionIncorrect,
+    sessionAnswers,
+    sessionSelections,
+    totalAnswered,
+    currentTab,
+    updatedAt: new Date().toISOString()
+  });
+}
+
+function clearSessionState() {
+  removePersisted(STORAGE_KEY_SESSION);
+}
+
+function restoreSessionIfAvailable() {
+  if (sessionRestored) return false;
+  const session = loadPersisted(STORAGE_KEY_SESSION, null);
+  if (!session || !Array.isArray(session.questions) || session.questions.length === 0) return false;
+
+  const restoredQuestions = session.questions.map(pair => {
+    if (Array.isArray(pair) && pair[1] && pair[1].topic) return [String(pair[0] || pair[1].chapter || '?'), pair[1]];
+    if (pair && pair.topic) return [String(pair.chapter || '?'), pair];
+    return null;
+  }).filter(Boolean);
+
+  if (restoredQuestions.length === 0) {
+    clearSessionState();
+    return false;
+  }
+
+  questions = restoredQuestions;
+  currentIdx = Math.min(Math.max(Number(session.currentIdx) || 0, 0), questions.length - 1);
+  sessionIncorrect = normalizeStoredList(session.sessionIncorrect || []);
+  sessionAnswers = typeof session.sessionAnswers === 'object' && session.sessionAnswers !== null ? session.sessionAnswers : {};
+  sessionSelections = typeof session.sessionSelections === 'object' && session.sessionSelections !== null ? session.sessionSelections : {};
+  totalAnswered = Number(session.totalAnswered) || Object.keys(sessionAnswers).length;
+  reviewContext = null;
+  reviewReturnState = null;
+  sessionRestored = true;
+
+  document.getElementById('setupPanel').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('reportPanel').style.display = 'none';
+
+  const tab = ['quiz', 'wrongs', 'bookmarks'].includes(session.currentTab) ? session.currentTab : 'quiz';
+  switchTab(tab);
+  if (tab === 'quiz') renderQuestion();
+  return true;
+}
+
+// ===== Util =====
+function escapeHtml(s) {
+  const el = document.createElement('span');
+  el.textContent = s == null ? '' : String(s);
+  return el.innerHTML;
+}
+
+// Init
+function init() {
+  updateBadges();
+  updateChapterUI(false);
+  if (wrongHistory.length > 0 || bookmarks.length > 0) {
+    document.getElementById('quickActions').style.display = 'flex';
+  }
+  document.getElementById('chapterSelect').addEventListener('change', saveSettings);
+  document.getElementById('chapterRange').addEventListener('input', saveSettings);
+  loadDefaultQuestionBank();
+}
+init();
+</script>
+</body>
+</html>
