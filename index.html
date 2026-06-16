@@ -66,10 +66,10 @@
   .btn-ai:hover { opacity: .9; }
   .btn-ai:disabled { background: #9ca3af; cursor: wait; }
 
-  /* AI Analysis */
+  /* AI Analysis + Q&A */
   .ai-panel {
     margin-top: 12px; border-radius: 10px; overflow: hidden;
-    border: 1px solid var(--border); display: none;
+    border: 1px solid var(--border); display: none; background: var(--card-bg);
   }
   .ai-panel.show { display: block; }
   .ai-panel .ai-header {
@@ -78,13 +78,66 @@
     display: flex; align-items: center; gap: 6px;
     border-bottom: 1px solid var(--border);
   }
+  .ai-panel .ai-header .ai-title { flex: 1; }
+  .ai-gear {
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    font-size: .78rem; padding: 2px 9px; cursor: pointer; color: var(--text-secondary);
+  }
+  .ai-gear:hover { background: #fff; color: var(--primary); }
+  .ai-settings {
+    display: none; padding: 12px 16px; gap: 8px; flex-direction: column;
+    background: #fafafe; border-bottom: 1px solid var(--border); font-size: .85rem;
+  }
+  .ai-settings.show { display: flex; }
+  .ai-settings label { font-weight: 600; color: var(--text-secondary); font-size: .8rem; }
+  .ai-settings input, .ai-settings select {
+    padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: .85rem; font-family: inherit; width: 100%;
+  }
+  .ai-settings .ai-hint { color: var(--text-secondary); font-size: .76rem; line-height: 1.5; }
+  .ai-settings .ai-status { font-size: .78rem; }
+  .ai-settings .ai-status.on { color: var(--success); }
+  .ai-settings .ai-status.off { color: var(--text-secondary); }
   .ai-panel .ai-body {
     padding: 14px 16px; font-size: .92rem; line-height: 1.7;
-    white-space: pre-wrap; color: var(--text);
+    white-space: pre-wrap; color: var(--text); border-bottom: 1px solid var(--border);
   }
-  .ai-panel .ai-body.loading {
-    color: var(--text-secondary); font-style: italic;
+  .ai-panel .ai-body .ai-label { color: #4f46e5; font-weight: 600; }
+  /* conversation thread */
+  .ai-chat { padding: 4px 16px 0; display: flex; flex-direction: column; gap: 10px; }
+  .ai-chat:empty { padding: 0; }
+  .ai-msg { max-width: 92%; padding: 9px 13px; border-radius: 12px; font-size: .9rem; line-height: 1.7; }
+  .ai-msg.user { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 3px; white-space: pre-wrap; }
+  .ai-msg.assistant { align-self: flex-start; background: #f4f4f8; color: var(--text); border-bottom-left-radius: 3px; }
+  .ai-msg.assistant.loading { color: var(--text-secondary); font-style: italic; }
+  /* markdown inside assistant bubbles */
+  .ai-md > :first-child { margin-top: 0; }
+  .ai-md > :last-child { margin-bottom: 0; }
+  .ai-md h4, .ai-md h5, .ai-md h6 { margin: 12px 0 6px; font-size: .92rem; color: var(--primary); }
+  .ai-md p { margin: 7px 0; }
+  .ai-md ul, .ai-md ol { margin: 6px 0; padding-left: 22px; }
+  .ai-md li { margin: 3px 0; }
+  .ai-md code { background: #e9e9f2; padding: 1px 5px; border-radius: 4px; font-size: .86em; }
+  .ai-md table { border-collapse: collapse; margin: 8px 0; width: 100%; font-size: .85rem; }
+  .ai-md th, .ai-md td { border: 1px solid var(--border); padding: 5px 9px; text-align: left; }
+  .ai-md th { background: #eef2ff; }
+  /* preset chips */
+  .ai-presets { display: flex; flex-wrap: wrap; gap: 7px; padding: 12px 16px 6px; }
+  .ai-chip {
+    background: #fff; border: 1px solid var(--primary); color: var(--primary);
+    border-radius: 999px; padding: 5px 12px; font-size: .8rem; cursor: pointer;
+    transition: background .15s; font-family: inherit;
   }
+  .ai-chip:hover { background: var(--option-selected); }
+  .ai-chip:disabled { opacity: .5; cursor: not-allowed; }
+  /* input row */
+  .ai-input-row { display: flex; gap: 8px; padding: 6px 16px 14px; align-items: flex-end; }
+  .ai-input-row textarea {
+    flex: 1; resize: none; padding: 9px 12px; border: 1px solid var(--border);
+    border-radius: 10px; font-size: .9rem; font-family: inherit; line-height: 1.5;
+    max-height: 140px;
+  }
+  .ai-input-row textarea:focus { outline: none; border-color: var(--primary); }
 
   /* Nav Tabs */
   .nav-tabs {
@@ -279,12 +332,31 @@
         </div>
         <div class="options" id="optionsContainer"></div>
         <div class="answer-feedback" id="feedback"></div>
-        <div class="btn-row" style="margin-top:8px;display:none;" id="aiBtnRow">
-          <button class="btn btn-ai btn-sm" id="aiBtn" onclick="requestAIAnalysis()">🤖 AI 分析</button>
-        </div>
         <div class="ai-panel" id="aiPanel">
-          <div class="ai-header">🤖 AI 分析</div>
+          <div class="ai-header">
+            <span class="ai-title" id="aiHeader">📖 答案详解</span>
+            <button class="ai-gear" id="aiGear" onclick="toggleAISettings()">⚙ AI 设置</button>
+          </div>
+          <div class="ai-settings" id="aiSettings">
+            <label for="aiProviderSelect">AI 提供方</label>
+            <select id="aiProviderSelect" onchange="onAIProviderChange()">
+              <option value="anthropic">Anthropic（Claude）</option>
+              <option value="deepseek">DeepSeek（深度求索）</option>
+            </select>
+            <label for="aiKeyInput"><span id="aiKeyLabel">API Key</span>（留空则走后端代理）</label>
+            <input type="password" id="aiKeyInput" placeholder="sk-..." autocomplete="off" oninput="onAIKeyInput()">
+            <label for="aiModelSelect">模型</label>
+            <select id="aiModelSelect" onchange="onAIModelChange()"></select>
+            <div class="ai-status off" id="aiStatus"></div>
+            <div class="ai-hint" id="aiHint"></div>
+          </div>
           <div class="ai-body" id="aiBody"></div>
+          <div class="ai-chat" id="aiChat"></div>
+          <div class="ai-presets" id="aiPresets"></div>
+          <div class="ai-input-row">
+            <textarea id="aiInput" rows="1" placeholder="向 AI 追问这道题…（Enter 发送，Shift+Enter 换行）"></textarea>
+            <button class="btn btn-ai btn-sm" id="aiSendBtn" onclick="onAISend()">发送</button>
+          </div>
         </div>
         <div class="btn-row" id="btnRow">
           <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()" disabled>提交答案</button>
@@ -680,15 +752,14 @@ function renderQuestion() {
   document.getElementById('nextBtn').classList.add('hidden');
   document.getElementById('returnListBtn').classList.add('hidden');
   document.getElementById('submitBtn').disabled = true;
-  document.getElementById('aiBtnRow').style.display = 'none';
   document.getElementById('aiPanel').classList.remove('show');
   document.getElementById('aiBody').textContent = '';
+  resetAIConversation();
 
   if (reviewContext) {
     selectedOptions = answerToIndexes(reviewContext.userAnswer || '');
     revealQuestionResult(q, reviewContext.userAnswer || '', 'review');
     document.getElementById('returnListBtn').classList.remove('hidden');
-    document.getElementById('aiBtnRow').style.display = 'flex';
   } else if (savedAnswer) {
     revealQuestionResult(q, savedAnswer.userAnswer, 'answered');
   } else {
@@ -770,6 +841,7 @@ function revealQuestionResult(q, userAnswer, mode = 'answered') {
     }
     document.getElementById('submitBtn').classList.add('hidden');
     document.getElementById('nextBtn').classList.add('hidden');
+    showStoredAnalysis(q);
     return;
   }
 
@@ -778,7 +850,365 @@ function revealQuestionResult(q, userAnswer, mode = 'answered') {
   fb.textContent = isCorrect ? '✅ 正确！' : '❌ 你的答案：' + normalizedUser + '   正确答案：' + correctAnswer;
   document.getElementById('submitBtn').classList.add('hidden');
   document.getElementById('nextBtn').classList.remove('hidden');
-  document.getElementById('aiBtnRow').style.display = 'flex';
+  showStoredAnalysis(q);
+}
+
+// Render the pre-generated 详解 stored on the question (q.analysis), if present.
+function formatAnalysisHTML(text) {
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  let html = esc(text).trim();
+  // each 【label】 starts its own line, label highlighted
+  html = html.replace(/\s*【([^】]+)】/g, (m, l) => '\n<span class="ai-label">【' + l + '】</span> ');
+  return html.replace(/^\n+/, '');
+}
+
+function showStoredAnalysis(q) {
+  const panel = document.getElementById('aiPanel');
+  const body = document.getElementById('aiBody');
+  const header = document.getElementById('aiHeader');
+  panel.classList.add('show');
+  if (q && q.analysis) {
+    body.style.display = '';
+    body.className = 'ai-body';
+    body.innerHTML = formatAnalysisHTML(q.analysis);
+    if (header) header.textContent = '📖 答案详解（依据课程课件）';
+  } else {
+    body.style.display = 'none';
+    if (header) header.textContent = '🤖 AI 答疑';
+  }
+  renderAIPresets();
+}
+
+/* ===================== AI Q&A engine ===================== */
+const STORAGE_KEY_AI = 'se_quiz_ai_cfg';
+
+const AI_PROVIDERS = {
+  anthropic: {
+    label: 'Anthropic（Claude）',
+    keyLabel: 'Anthropic API Key',
+    keyPlaceholder: 'sk-ant-...',
+    endpoint: 'https://api.anthropic.com/v1/messages',
+    defaultModel: 'claude-sonnet-4-6',
+    models: [
+      ['claude-sonnet-4-6', 'Claude Sonnet 4.6（均衡）'],
+      ['claude-opus-4-8', 'Claude Opus 4.8（最强）'],
+      ['claude-haiku-4-5-20251001', 'Claude Haiku 4.5（最快）']
+    ],
+    hint: 'Key 仅存于本浏览器 localStorage，直接发往 api.anthropic.com。留空则用后端 /api/analyze（需本地 server.py 或线上配置 ANTHROPIC_API_KEY）。'
+  },
+  deepseek: {
+    label: 'DeepSeek（深度求索）',
+    keyLabel: 'DeepSeek API Key',
+    keyPlaceholder: 'sk-...',
+    endpoint: 'https://api.deepseek.com/chat/completions',
+    defaultModel: 'deepseek-chat',
+    models: [
+      ['deepseek-chat', 'DeepSeek-V3（deepseek-chat，通用）'],
+      ['deepseek-reasoner', 'DeepSeek-R1（deepseek-reasoner，推理）']
+    ],
+    hint: 'Key 仅存于本浏览器 localStorage，直接发往 api.deepseek.com（OpenAI 兼容接口）。留空则用后端 /api/analyze（需配置 DEEPSEEK_API_KEY）。'
+  }
+};
+
+const AI_SYSTEM = [
+  '你是浙江大学《软件工程》课程的助教，精通 Pressman《软件工程：实践者的研究方法》（第 8 版）。你在帮助学生真正理解课程客观题背后的知识。',
+  '',
+  '回答要求：',
+  '- 以中文讲解为主，关键术语中英并给（例如 内聚 cohesion、耦合 coupling）。',
+  '- 内容准确、有条理，像助教辅导：多讲清楚“为什么”，点出易错处与常见误区。',
+  '- 可使用 Markdown 的小标题（用 ### 三级及以下）、有序/无序列表、表格来组织内容，使条理清晰。',
+  '- 严禁使用 Markdown 粗体（**）、斜体（*）以及任何 emoji 表情符号。',
+  '- 以课程内容与 Pressman 教材为准；若题目或参考答案本身存在争议，请明确指出并说明理由。',
+  '- 篇幅适中，默认 300–500 字；当学生要求“更详细 / 展开”时再加长。'
+].join('\n');
+
+const AI_PRESETS = [
+  { id: 'deeper',  label: '深入讲解', text: '请把这道题的核心知识点讲得更深入、透彻，补充课件背景、基本原理，以及它在实际软件工程中的意义。' },
+  { id: 'options', label: '选项辨析', text: '请逐个选项深入分析，重点说清每个干扰项为什么错、它与正确项的本质区别在哪里。' },
+  { id: 'example', label: '举例说明', text: '请用一个具体的软件工程实例或场景，把这道题考查的知识点讲清楚。' },
+  { id: 'compare', label: '概念对比', text: '请把本题涉及的核心概念，与课程中容易混淆的相邻概念进行对比，用一个表格列出它们的区别。' },
+  { id: 'context', label: '章节脉络', text: '这道题在本章以及 Pressman 对应章节的知识体系中处于什么位置？它关联哪些考点，常和哪些题型一起出现？' },
+  { id: 'variant', label: '举一反三', text: '请基于这道题的考点，再出 2 道同类型的变式练习题，并给出参考答案与简要解析。' }
+];
+
+let aiConversation = [];   // [{role, content}] for the current question
+let aiBusy = false;
+
+function getAICfg() {
+  const c = loadPersisted(STORAGE_KEY_AI, {});
+  let changed = false;
+  // migrate legacy single-provider config {apiKey, model} -> per-provider (Anthropic)
+  if (c.apiKey !== undefined) { if (!c.anthropicKey) c.anthropicKey = c.apiKey; delete c.apiKey; changed = true; }
+  if (c.model !== undefined) {
+    if (!c.anthropicModel && String(c.model).startsWith('claude')) c.anthropicModel = c.model;
+    delete c.model; changed = true;
+  }
+  if (changed) savePersisted(STORAGE_KEY_AI, c);
+  return c;
+}
+function saveAICfg(cfg) { savePersisted(STORAGE_KEY_AI, cfg); }
+function aiProvider(c) { return AI_PROVIDERS[c.provider] ? c.provider : 'anthropic'; }
+function aiKey(c, p) { p = p || aiProvider(c); return (p === 'deepseek' ? c.deepseekKey : c.anthropicKey) || ''; }
+function aiModel(c, p) { p = p || aiProvider(c); return (p === 'deepseek' ? c.deepseekModel : c.anthropicModel) || AI_PROVIDERS[p].defaultModel; }
+
+function currentQuestion() {
+  const entry = questions[currentIdx];
+  return entry ? entry[1] : null;
+}
+
+function resetAIConversation() {
+  aiConversation = [];
+  const chat = document.getElementById('aiChat');
+  if (chat) chat.innerHTML = '';
+}
+
+function renderAIPresets() {
+  const wrap = document.getElementById('aiPresets');
+  if (!wrap) return;
+  if (wrap.childElementCount) return;   // build once
+  AI_PRESETS.forEach(p => {
+    const b = document.createElement('button');
+    b.className = 'ai-chip';
+    b.textContent = p.label;
+    b.dataset.presetId = p.id;
+    b.onclick = () => sendAIQuestion(p.text);
+    wrap.appendChild(b);
+  });
+}
+
+function buildAIContext(q) {
+  let ctx = '【当前题目】\n' + q.topic + '\n\n【选项】\n' + (q.options || []).join('\n') +
+            '\n\n【参考答案】' + q.answer;
+  if (q.analysis) {
+    ctx += '\n\n【课程详解（已展示给学生，请在此基础上深入，不要简单照搬重复）】\n' + q.analysis;
+  }
+  return ctx;
+}
+
+function setAIBusy(busy) {
+  aiBusy = busy;
+  document.getElementById('aiSendBtn').disabled = busy;
+  document.querySelectorAll('#aiPresets .ai-chip').forEach(c => { c.disabled = busy; });
+}
+
+function appendChatBubble(role, content, isLoading) {
+  const chat = document.getElementById('aiChat');
+  const div = document.createElement('div');
+  div.className = 'ai-msg ' + role + (isLoading ? ' loading' : '');
+  if (role === 'assistant' && !isLoading) {
+    div.classList.add('ai-md');
+    div.innerHTML = renderMarkdown(content);
+  } else {
+    div.textContent = content;
+  }
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return div;
+}
+
+function onAISend() {
+  const input = document.getElementById('aiInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = 'auto';
+  sendAIQuestion(text);
+}
+
+async function sendAIQuestion(userText) {
+  if (aiBusy) return;
+  const q = currentQuestion();
+  if (!q || !userText) return;
+
+  const isFirst = aiConversation.length === 0;
+  const payloadText = isFirst ? (buildAIContext(q) + '\n\n【学生提问】\n' + userText) : userText;
+  aiConversation.push({ role: 'user', content: payloadText });
+  appendChatBubble('user', userText);
+
+  const pending = appendChatBubble('assistant', '正在思考…', true);
+  setAIBusy(true);
+  try {
+    const reply = await callAI(aiConversation);
+    aiConversation.push({ role: 'assistant', content: reply });
+    pending.className = 'ai-msg assistant ai-md';
+    pending.innerHTML = renderMarkdown(reply);
+  } catch (err) {
+    aiConversation.pop();                       // drop the failed user turn to keep roles alternating
+    pending.className = 'ai-msg assistant';
+    const cfg = getAICfg();
+    const hint = aiKey(cfg) ? '' : '\n（提示：可点击右上角“⚙ AI 设置”选择提供方并填入 API Key，或在后端配置对应的 Key。）';
+    pending.textContent = '⚠ AI 请求失败：' + err.message + hint;
+  }
+  setAIBusy(false);
+  document.getElementById('aiChat').scrollTop = document.getElementById('aiChat').scrollHeight;
+}
+
+async function callAI(messages) {
+  const cfg = getAICfg();
+  const provider = aiProvider(cfg);
+  const key = aiKey(cfg, provider);
+  const model = aiModel(cfg, provider);
+  if (key) {
+    return provider === 'deepseek'
+      ? callDeepSeekDirect(key, model, messages)
+      : callAnthropicDirect(key, model, messages);
+  }
+  // backend proxy (provider routed server-side)
+  const apiUrl = ['localhost', '127.0.0.1'].includes(location.hostname) ? 'http://localhost:8765/api/analyze' : '/api/analyze';
+  const resp = await fetch(apiUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ provider, model, max_tokens: 1500, system: AI_SYSTEM, messages })
+  });
+  let data;
+  try { data = await resp.json(); }
+  catch (_) { throw new Error('后端无响应，请确认已运行 python3 server.py'); }
+  if (data.error) throw new Error(data.error);
+  return data.reply || data.analysis || 'AI 未返回文本内容';
+}
+
+async function httpError(resp) {
+  let detail = '';
+  try { const e = await resp.json(); detail = (e.error && (e.error.message || e.error)) || JSON.stringify(e); }
+  catch (_) { try { detail = await resp.text(); } catch (__) { detail = ''; } }
+  return new Error('HTTP ' + resp.status + ' ' + String(detail).slice(0, 200));
+}
+
+async function callAnthropicDirect(key, model, messages) {
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({ model, max_tokens: 1500, temperature: 0.4, system: AI_SYSTEM, messages })
+  });
+  if (!resp.ok) throw await httpError(resp);
+  const data = await resp.json();
+  return (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('') || 'AI 未返回文本内容';
+}
+
+async function callDeepSeekDirect(key, model, messages) {
+  // OpenAI-compatible: system goes in as the first message
+  const body = { model, messages: [{ role: 'system', content: AI_SYSTEM }, ...messages], max_tokens: 1500, stream: false };
+  if (model !== 'deepseek-reasoner') body.temperature = 0.4;   // reasoner ignores temperature
+  const resp = await fetch('https://api.deepseek.com/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+    body: JSON.stringify(body)
+  });
+  if (!resp.ok) throw await httpError(resp);
+  const data = await resp.json();
+  const msg = data.choices && data.choices[0] && data.choices[0].message;
+  return (msg && msg.content) || 'AI 未返回文本内容';
+}
+
+// ===== AI settings =====
+function toggleAISettings() {
+  const box = document.getElementById('aiSettings');
+  box.classList.toggle('show');
+  if (box.classList.contains('show')) loadAISettingsUI();
+}
+function populateModelOptions(provider, selected) {
+  const sel = document.getElementById('aiModelSelect');
+  sel.innerHTML = '';
+  AI_PROVIDERS[provider].models.forEach(([val, label]) => {
+    const o = document.createElement('option');
+    o.value = val; o.textContent = label;
+    sel.appendChild(o);
+  });
+  sel.value = selected || AI_PROVIDERS[provider].defaultModel;
+}
+function loadAISettingsUI() {
+  const cfg = getAICfg();
+  const provider = aiProvider(cfg);
+  const meta = AI_PROVIDERS[provider];
+  document.getElementById('aiProviderSelect').value = provider;
+  document.getElementById('aiKeyLabel').textContent = meta.keyLabel;
+  const keyInput = document.getElementById('aiKeyInput');
+  keyInput.value = aiKey(cfg, provider);
+  keyInput.placeholder = meta.keyPlaceholder;
+  populateModelOptions(provider, aiModel(cfg, provider));
+  document.getElementById('aiHint').textContent = meta.hint;
+  refreshAIStatus();
+}
+function refreshAIStatus() {
+  const el = document.getElementById('aiStatus');
+  const cfg = getAICfg();
+  const provider = aiProvider(cfg);
+  const meta = AI_PROVIDERS[provider];
+  const model = aiModel(cfg, provider);
+  if (aiKey(cfg, provider)) { el.className = 'ai-status on'; el.textContent = '● 当前：浏览器直连 ' + meta.label + '（' + model + '）'; }
+  else { el.className = 'ai-status off'; el.textContent = '○ 当前：' + meta.label + ' 后端代理（未填写 Key）'; }
+}
+function onAIProviderChange() {
+  const cfg = getAICfg();
+  cfg.provider = document.getElementById('aiProviderSelect').value;
+  saveAICfg(cfg);
+  loadAISettingsUI();   // refresh key field, model list and hint for the new provider
+}
+function onAIKeyInput() {
+  const cfg = getAICfg();
+  const provider = document.getElementById('aiProviderSelect').value;
+  const val = document.getElementById('aiKeyInput').value.trim();
+  if (provider === 'deepseek') cfg.deepseekKey = val; else cfg.anthropicKey = val;
+  saveAICfg(cfg);
+  refreshAIStatus();
+}
+function onAIModelChange() {
+  const cfg = getAICfg();
+  const provider = document.getElementById('aiProviderSelect').value;
+  const val = document.getElementById('aiModelSelect').value;
+  if (provider === 'deepseek') cfg.deepseekModel = val; else cfg.anthropicModel = val;
+  saveAICfg(cfg);
+  refreshAIStatus();
+}
+
+// ===== minimal Markdown renderer (headings / lists / tables / code; no bold/italic/emoji) =====
+function renderMarkdown(md) {
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const inline = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>');
+  let text = String(md).replace(/\*\*/g, '').replace(/\r/g, '');   // strip stray bold markers
+  const lines = text.split('\n');
+  let html = '', i = 0;
+  const isUL = l => /^\s*[-*+]\s+/.test(l);
+  const isOL = l => /^\s*\d+\.\s+/.test(l);
+  const isHd = l => /^#{1,6}\s/.test(l);
+  const isTblRow = l => /^\s*\|.*\|\s*$/.test(l);
+  while (i < lines.length) {
+    const line = lines[i];
+    if (isTblRow(line) && i + 1 < lines.length && /^\s*\|?[\s:|-]*-[\s:|-]*$/.test(lines[i + 1])) {
+      const cells = r => r.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+      const header = cells(line); i += 2;
+      const rows = [];
+      while (i < lines.length && isTblRow(lines[i])) { rows.push(cells(lines[i])); i++; }
+      html += '<table><thead><tr>' + header.map(h => '<th>' + inline(h) + '</th>').join('') + '</tr></thead><tbody>' +
+              rows.map(r => '<tr>' + r.map(c => '<td>' + inline(c) + '</td>').join('') + '</tr>').join('') +
+              '</tbody></table>';
+      continue;
+    }
+    const hd = line.match(/^(#{1,6})\s+(.*)$/);
+    if (hd) { const lv = Math.min(6, hd[1].length + 2); html += '<h' + lv + '>' + inline(hd[2]) + '</h' + lv + '>'; i++; continue; }
+    if (isUL(line)) {
+      html += '<ul>';
+      while (i < lines.length && isUL(lines[i])) { html += '<li>' + inline(lines[i].replace(/^\s*[-*+]\s+/, '')) + '</li>'; i++; }
+      html += '</ul>'; continue;
+    }
+    if (isOL(line)) {
+      html += '<ol>';
+      while (i < lines.length && isOL(lines[i])) { html += '<li>' + inline(lines[i].replace(/^\s*\d+\.\s+/, '')) + '</li>'; i++; }
+      html += '</ol>'; continue;
+    }
+    if (/^\s*$/.test(line)) { i++; continue; }
+    const para = [];
+    while (i < lines.length && !/^\s*$/.test(lines[i]) && !isHd(lines[i]) && !isUL(lines[i]) && !isOL(lines[i]) && !isTblRow(lines[i])) {
+      para.push(lines[i]); i++;
+    }
+    html += '<p>' + para.map(inline).join('<br>') + '</p>';
+  }
+  return html;
 }
 
 // ===== Bookmark =====
@@ -833,8 +1263,6 @@ function submitAnswer() {
   }
 
   document.getElementById('progressFill').style.width = ((currentIdx + 1) / questions.length * 100) + '%';
-  document.getElementById('aiPanel').classList.remove('show');
-  document.getElementById('aiBody').textContent = '';
   updateBadges();
   saveSessionState();
 }
@@ -1029,6 +1457,17 @@ function restoreQuizState(state) {
   totalAnswered = state.totalAnswered || 0;
 }
 
+// Look up the pre-generated 详解 for a question by its topic text, from the loaded bank.
+function findStoredAnalysis(topic) {
+  if (!questionBank || !topic) return '';
+  for (const qs of Object.values(questionBank)) {
+    for (const q of qs) {
+      if (q && q.analysis && q.topic === topic) return q.analysis;
+    }
+  }
+  return '';
+}
+
 function viewSavedQuestion(source, displayIdx) {
   const list = source === 'bookmarks' ? bookmarks : wrongHistory;
   const realIdx = list.length - 1 - displayIdx;
@@ -1037,6 +1476,10 @@ function viewSavedQuestion(source, displayIdx) {
 
   if (!reviewContext) reviewReturnState = captureQuizState();
   reviewContext = { source, userAnswer: item.userAnswer || '' };
+  if (!item.analysis) {
+    const found = findStoredAnalysis(item.topic);
+    if (found) item.analysis = found;
+  }
   questions = [[item.chapter || '?', item]];
   currentIdx = 0;
 
@@ -1120,41 +1563,6 @@ function showReport() {
   savePersisted(STORAGE_KEY_WRONG, wrongHistory);
   clearSessionState();
   updateBadges();
-}
-
-// ===== AI Analysis =====
-async function requestAIAnalysis() {
-  const [chapter, q] = questions[currentIdx];
-  const panel = document.getElementById('aiPanel');
-  const body = document.getElementById('aiBody');
-  const btn = document.getElementById('aiBtn');
-
-  panel.classList.add('show');
-  body.className = 'ai-body loading';
-  body.textContent = '正在分析...';
-  btn.disabled = true;
-
-  try {
-    const apiUrl = ['localhost', '127.0.0.1'].includes(location.hostname)
-      ? 'http://localhost:8765/api/analyze'
-      : '/api/analyze';
-    const resp = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic: q.topic, options: q.options, answer: q.answer })
-    });
-    const data = await resp.json();
-    if (data.error) {
-      body.textContent = '❌ ' + data.error;
-    } else {
-      body.className = 'ai-body';
-      body.textContent = data.analysis;
-    }
-  } catch (e) {
-    body.className = 'ai-body';
-    body.textContent = '❌ 无法连接到 AI 服务器。请确认已运行 python3 server.py';
-  }
-  btn.disabled = false;
 }
 
 // ===== Export =====
@@ -1265,6 +1673,16 @@ function init() {
   }
   document.getElementById('chapterSelect').addEventListener('change', saveSettings);
   document.getElementById('chapterRange').addEventListener('input', saveSettings);
+
+  const aiInput = document.getElementById('aiInput');
+  aiInput.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); onAISend(); }
+  });
+  aiInput.addEventListener('input', () => {
+    aiInput.style.height = 'auto';
+    aiInput.style.height = Math.min(aiInput.scrollHeight, 140) + 'px';
+  });
+
   loadDefaultQuestionBank();
 }
 init();

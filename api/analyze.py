@@ -40,47 +40,80 @@ class handler(BaseHTTPRequestHandler):
             json_response(self, 400, {"error": "请求体不是有效 JSON"})
             return
 
-        topic = body.get("topic", "")
-        options = body.get("options", [])
-        answer = body.get("answer", "")
-        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        default_system = "你是浙大软件工程课程助教，用准确、有条理的中文讲解客观题，关键术语中英并给，禁止使用粗体、斜体和 emoji。"
 
-        if not topic:
-            json_response(self, 400, {"error": "缺少题目内容"})
-            return
-        if not api_key:
-            json_response(self, 200, {"error": "线上 AI 分析未配置 ANTHROPIC_API_KEY；刷题、错题和收藏功能可正常使用。"})
-            return
+        provider = body.get("provider", "anthropic")
+        raw_messages = body.get("messages")
+        max_tokens = min(int(body.get("max_tokens", 1500) or 1500), 4096)
 
-        payload = {
-            "model": os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6"),
-            "max_tokens": 600,
-            "temperature": 0.3,
-            "system": "你是浙大软件工程课程助教，用简洁中文分析客观题，控制在200字以内。",
-            "messages": [
-                {
-                    "role": "user",
-                    "content": ANALYSIS_PROMPT.format(
-                        topic=topic,
-                        options="\n".join(str(o) for o in options),
-                        answer=answer,
-                    ),
-                }
-            ],
-        }
-        request = urllib.request.Request(
-            "https://api.anthropic.com/v1/messages",
-            data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
-            headers={
+        if isinstance(raw_messages, list) and raw_messages:
+            # New multi-turn Q&A path
+            messages = [
+                {"role": m.get("role", "user"), "content": str(m.get("content", ""))}
+                for m in raw_messages if m.get("content")
+            ]
+            system = body.get("system") or default_system
+        else:
+            # Legacy {topic, options, answer} path (Anthropic only)
+            provider = "anthropic"
+            topic = body.get("topic", "")
+            if not topic:
+                json_response(self, 400, {"error": "缺少题目内容或对话消息"})
+                return
+            system = default_system
+            max_tokens = 600
+            messages = [{
+                "role": "user",
+                "content": ANALYSIS_PROMPT.format(
+                    topic=topic,
+                    options="\n".join(str(o) for o in body.get("options", [])),
+                    answer=body.get("answer", ""),
+                ),
+            }]
+
+        if provider == "deepseek":
+            api_key = os.environ.get("DEEPSEEK_API_KEY", "")
+            if not api_key:
+                json_response(self, 200, {"error": "线上 AI 未配置 DEEPSEEK_API_KEY。可在前端“⚙ AI 设置”选 DeepSeek 并填入你自己的 Key（浏览器直连），刷题/错题/收藏不受影响。"})
+                return
+            model = body.get("model") or os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
+            payload = {
+                "model": model,
+                "max_tokens": max_tokens,
+                "stream": False,
+                "messages": [{"role": "system", "content": system}] + messages,
+            }
+            if model != "deepseek-reasoner":
+                payload["temperature"] = 0.4
+            url = "https://api.deepseek.com/chat/completions"
+            headers = {"Content-Type": "application/json", "Authorization": "Bearer " + api_key}
+        else:
+            api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+            if not api_key:
+                json_response(self, 200, {"error": "线上 AI 未配置 ANTHROPIC_API_KEY。可在前端“⚙ AI 设置”填入你自己的 Key（浏览器直连），刷题/错题/收藏不受影响。"})
+                return
+            model = body.get("model") or os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6")
+            payload = {
+                "model": model,
+                "max_tokens": max_tokens,
+                "temperature": 0.4,
+                "system": system,
+                "messages": messages,
+            }
+            url = "https://api.anthropic.com/v1/messages"
+            headers = {
                 "Content-Type": "application/json",
                 "x-api-key": api_key,
                 "anthropic-version": "2023-06-01",
-            },
-            method="POST",
+            }
+
+        request = urllib.request.Request(
+            url, data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+            headers=headers, method="POST",
         )
 
         try:
-            with urllib.request.urlopen(request, timeout=30) as resp:
+            with urllib.request.urlopen(request, timeout=60) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="replace")
@@ -90,8 +123,10 @@ class handler(BaseHTTPRequestHandler):
             json_response(self, 500, {"error": "AI 分析请求失败：" + str(exc)})
             return
 
-        text = ""
-        for block in data.get("content", []):
-            if block.get("type") == "text":
-                text += block.get("text", "")
-        json_response(self, 200, {"analysis": text or "AI 未返回文本内容"})
+        if provider == "deepseek":
+            choices = data.get("choices") or []
+            text = choices[0].get("message", {}).get("content", "") if choices else ""
+        else:
+            text = "".join(b.get("text", "") for b in data.get("content", []) if b.get("type") == "text")
+        text = text or "AI 未返回文本内容"
+        json_response(self, 200, {"reply": text, "analysis": text})

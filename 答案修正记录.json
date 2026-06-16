@@ -1,0 +1,72 @@
+[
+  {
+    "chapter": 1,
+    "qno": 3,
+    "topic": "3. Software deteriorates rather than wears out because",
+    "old_answer": "D",
+    "new_answer": "C"
+  },
+  {
+    "chapter": 3,
+    "qno": 1,
+    "topic": "1. Which of the following are recognized process flow types?",
+    "old_answer": "AC",
+    "new_answer": "ABC"
+  },
+  {
+    "chapter": 4,
+    "qno": 11,
+    "topic": "11. Which of these are objectives of Team Software Process?",
+    "old_answer": "BC",
+    "new_answer": "AC"
+  },
+  {
+    "chapter": 15,
+    "qno": 15,
+    "topic": "15. Interface design patterns typically include a complete component-level design (design ",
+    "old_answer": "A",
+    "new_answer": "B"
+  },
+  {
+    "chapter": 24,
+    "qno": 4,
+    "topic": "4. Test case design for OO software is driven by the algorithmic detail of the individual ",
+    "old_answer": "A",
+    "new_answer": "B"
+  },
+  {
+    "chapter": 25,
+    "qno": 9,
+    "topic": "9. Which of the following is not a WebApp interface mechanism?",
+    "old_answer": "C",
+    "new_answer": "A"
+  },
+  {
+    "chapter": 26,
+    "qno": 5,
+    "topic": "5. A weighted device platform matrix helps to prioritize test cases.",
+    "old_answer": "B",
+    "new_answer": "A"
+  },
+  {
+    "chapter": 27,
+    "qno": 10,
+    "topic": "10. Security correctness checks should be included which of the following activities?",
+    "old_answer": "ABC",
+    "new_answer": "ACD"
+  },
+  {
+    "chapter": 29,
+    "qno": 15,
+    "topic": "15. Configuration issues that need to be considered when developing Web and Mobile Apps in",
+    "old_answer": "ABC",
+    "new_answer": "ACD"
+  },
+  {
+    "chapter": 30,
+    "qno": 11,
+    "topic": "11. The depth of inheritance tree (DIT) metric can give an OO software designer a reading ",
+    "old_answer": "B",
+    "new_answer": "C"
+  }
+]
