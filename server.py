@@ -2,6 +2,7 @@
 """SoftEng Quiz AI Server — local backend for question analysis via Claude API."""
 
 import json, os, re, sys
+import urllib.request, urllib.error
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse
 
@@ -17,11 +18,12 @@ ANALYSIS_PROMPT = """你是一位浙江大学软件工程课程的助教。请�
 3. 要点：一句话记忆技巧或易错提醒"""
 
 
-def analyze_with_claude(topic, options, answer):
-    import anthropic
+DEFAULT_SYSTEM = "你是浙大软件工程课程助教，用准确、有条理的中文讲解客观题，关键术语中英并给，禁止使用粗体、斜体和 emoji。"
+
+
+def get_api_key():
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
-        # Try reading from common locations
         for p in ["~/.anthropic/api_key", "~/.claude.json", ".env"]:
             pp = os.path.expanduser(p)
             if os.path.exists(pp):
@@ -29,28 +31,62 @@ def analyze_with_claude(topic, options, answer):
                     with open(pp) as f:
                         data = json.load(f) if p.endswith(".json") else {}
                     api_key = data.get("api_key", "") if isinstance(data, dict) else f.read().strip()
-                    if api_key: break
-                except: pass
+                    if api_key:
+                        break
+                except Exception:
+                    pass
+    return api_key
+
+
+def chat_with_claude(system, messages, model=None, max_tokens=1500):
+    """Generic multi-turn call. `messages` is a list of {role, content}."""
+    import anthropic
+    api_key = get_api_key()
     if not api_key:
         return "错误：请设置 ANTHROPIC_API_KEY 环境变量"
 
     client = anthropic.Anthropic(api_key=api_key)
-    opts_text = "\n".join(o for o in options)
-
     message = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=600,
-        temperature=0.3,
-        system="你是浙大软件工程课程助教，用简洁中文分析客观题，控制在200字以内。",
-        messages=[{"role": "user", "content": ANALYSIS_PROMPT.format(
-            topic=topic, options=opts_text, answer=answer
-        )}]
+        model=model or os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6"),
+        max_tokens=max_tokens,
+        temperature=0.4,
+        system=system or DEFAULT_SYSTEM,
+        messages=messages,
     )
-    # Extract text from response (handle thinking blocks)
-    for block in message.content:
-        if hasattr(block, 'text') and block.type == 'text':
-            return block.text
-    return str(message.content)
+    return "".join(
+        b.text for b in message.content if getattr(b, "type", "") == "text" and hasattr(b, "text")
+    ) or str(message.content)
+
+
+def chat_with_deepseek(system, messages, model=None, max_tokens=1500):
+    """DeepSeek (OpenAI-compatible). `messages` is user/assistant turns; system prepended as a message."""
+    api_key = os.environ.get("DEEPSEEK_API_KEY", "")
+    if not api_key:
+        return "错误：请设置 DEEPSEEK_API_KEY 环境变量"
+
+    model = model or os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
+    oa_messages = [{"role": "system", "content": system or DEFAULT_SYSTEM}] + messages
+    payload = {"model": model, "messages": oa_messages, "max_tokens": max_tokens, "stream": False}
+    if model != "deepseek-reasoner":
+        payload["temperature"] = 0.4
+    request = urllib.request.Request(
+        "https://api.deepseek.com/chat/completions",
+        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+        headers={"Content-Type": "application/json", "Authorization": "Bearer " + api_key},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=60) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+    choices = data.get("choices") or []
+    if choices:
+        return choices[0].get("message", {}).get("content", "") or "AI 未返回文本内容"
+    return "AI 未返回文本内容"
+
+
+def analyze_with_claude(topic, options, answer):
+    """Legacy single-shot analysis (kept for backward compatibility)."""
+    prompt = ANALYSIS_PROMPT.format(topic=topic, options="\n".join(str(o) for o in options), answer=answer)
+    return chat_with_claude(DEFAULT_SYSTEM, [{"role": "user", "content": prompt}], max_tokens=600)
 
 
 class AIHandler(SimpleHTTPRequestHandler):
@@ -59,17 +95,37 @@ class AIHandler(SimpleHTTPRequestHandler):
         if path == "/api/analyze":
             length = int(self.headers.get("Content-Length", 0))
             body = json.loads(self.rfile.read(length)) if length else {}
-            topic = body.get("topic", "")
-            options = body.get("options", [])
-            answer = body.get("answer", "")
+            messages = body.get("messages")
+            model = body.get("model")
+            provider = body.get("provider", "anthropic")
+            max_tokens = min(int(body.get("max_tokens", 1500) or 1500), 4096)
 
-            if not topic:
-                self._json_resp(400, {"error": "missing topic"})
+            if provider == "deepseek" and not os.environ.get("DEEPSEEK_API_KEY"):
+                self._json_resp(200, {"error": "后端未配置 DEEPSEEK_API_KEY。可在前端“⚙ AI 设置”选 DeepSeek 并填入你自己的 Key（浏览器直连），或设置环境变量后重启 server.py。"})
+                return
+            if provider != "deepseek" and not get_api_key():
+                self._json_resp(200, {"error": "后端未配置 ANTHROPIC_API_KEY。可在前端“⚙ AI 设置”填入你自己的 Key（浏览器直连），或设置环境变量后重启 server.py。"})
                 return
 
             try:
-                result = analyze_with_claude(topic, options, answer)
-                self._json_resp(200, {"analysis": result})
+                if isinstance(messages, list) and messages:
+                    # New multi-turn Q&A path
+                    system = body.get("system", DEFAULT_SYSTEM)
+                    norm = [{"role": m.get("role", "user"), "content": str(m.get("content", ""))}
+                            for m in messages if m.get("content")]
+                    if provider == "deepseek":
+                        result = chat_with_deepseek(system, norm, model, max_tokens)
+                    else:
+                        result = chat_with_claude(system, norm, model, max_tokens)
+                    self._json_resp(200, {"reply": result, "analysis": result})
+                else:
+                    # Legacy {topic, options, answer} path (Anthropic only)
+                    topic = body.get("topic", "")
+                    if not topic:
+                        self._json_resp(400, {"error": "missing topic or messages"})
+                        return
+                    result = analyze_with_claude(topic, body.get("options", []), body.get("answer", ""))
+                    self._json_resp(200, {"analysis": result, "reply": result})
             except Exception as e:
                 self._json_resp(500, {"error": str(e)})
         else:
