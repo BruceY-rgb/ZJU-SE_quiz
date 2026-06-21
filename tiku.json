@@ -134,7 +134,7 @@
     "3": [
         {
             "topic": "1. Which of the following are recognized process flow types?",
-            "answer": "AC",
+            "answer": "E",
             "options": [
                 "A. Concurrent process flow",
                 "B. Iterative process flow",
@@ -379,7 +379,7 @@
             "options": [
                 "A. What did you do since the last meeting?",
                 "B. What obstacles are you encountering?",
-                "C. What obstacles are you encountering?",
+                "C. What is the cause of the problems you are encountering?",
                 "D. What do you plan to accomplish be the next team meeting?"
             ]
         },
@@ -454,7 +454,7 @@
                 "B. Inadequate budget",
                 "C. Poorly coordinated software process",
                 "D. Unclear definition of team roles",
-                "E. a, b, d"
+                "E. a, b, d (incorrect: missing c)"
             ]
         },
         {
@@ -720,7 +720,7 @@
         },
         {
             "topic": "10. The work products produced during requirement elicitation will vary depending on the",
-            "answer": "AB",
+            "answer": "B",
             "options": [
                 "A. size of the budget.",
                 "B. size of the product being built.",
@@ -789,7 +789,7 @@
         },
         {
             "topic": "18. In requirements validation the requirements model is reviewed to ensure its technical feasibility.",
-            "answer": "A",
+            "answer": "B",
             "options": [
                 "A. True",
                 "B. False"

@@ -379,8 +379,27 @@ function makeKey(q) {
 }
 
 const QUESTION_FIXES = {
+  '1. Which of the following are recognized process flow types?': {
+    answer: 'E'
+  },
+  '8. Which is not one of the key questions that is answered by each team member at each daily Scrum meeting?': {
+    answer: 'C',
+    options: [
+      'A. What did you do since the last meeting?',
+      'B. What obstacles are you encountering?',
+      'C. What is the cause of the problems you are encountering?',
+      'D. What do you plan to accomplish be the next team meeting?'
+    ]
+  },
   '5. Which of the following can contribute to team toxicity?': {
-    answer: 'ACD'
+    answer: 'ACD',
+    options: [
+      'A. Frenzied work atmosphere',
+      'B. Inadequate budget',
+      'C. Poorly coordinated software process',
+      'D. Unclear definition of team roles',
+      'E. a, b, d (incorrect: missing c)'
+    ]
   },
   '10. Which of the following is not one of the principles of good coding?': {
     answer: 'D',
@@ -397,8 +416,11 @@ const QUESTION_FIXES = {
   '11. User stories are complete descriptions the user needs and include the non-functional requirements for a software increment.': {
     answer: 'B'
   },
+  '10. The work products produced during requirement elicitation will vary depending on the': {
+    answer: 'B'
+  },
   '18. In requirements validation the requirements model is reviewed to ensure its technical feasibility.': {
-    answer: 'A'
+    answer: 'B'
   }
 };
 
