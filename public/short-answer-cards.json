@@ -1,0 +1,490 @@
+[
+  {
+    "id": "sa-01-se-layers",
+    "title": "SE layers",
+    "prompt": "默写并说明 SE layers 的结构。",
+    "group": "过程与敏捷",
+    "points": [],
+    "images": [
+      {
+        "alt": "软件工程层级",
+        "src": "/short-answer-images/image-16.png"
+      }
+    ],
+    "sourceOrder": 1
+  },
+  {
+    "id": "sa-02-generic-software-framework",
+    "title": "Generic Software Framework",
+    "prompt": "简述 Generic Software Framework 的核心要点。",
+    "group": "过程与敏捷",
+    "points": [
+      "communication:与客户合作获取需求",
+      "planning:构建目标、描述难点、需求、定义工作计划",
+      "modeling:构建模型方便理解软件需求和设计",
+      "construction:软件开发和测试",
+      "deployment：软件开发和测试"
+    ],
+    "images": [],
+    "sourceOrder": 2
+  },
+  {
+    "id": "sa-03-process-flow",
+    "title": "process flow",
+    "prompt": "默写并说明 process flow 的结构。",
+    "group": "过程与敏捷",
+    "points": [],
+    "images": [
+      {
+        "alt": "过程流",
+        "src": "/short-answer-images/image-17.png"
+      }
+    ],
+    "sourceOrder": 3
+  },
+  {
+    "id": "sa-04-phases-of-unified-process",
+    "title": "Phases of Unified Process",
+    "prompt": "简述 Phases of Unified Process 的核心要点。",
+    "group": "过程与敏捷",
+    "points": [
+      "Inception",
+      "Elaboration",
+      "Construction",
+      "Transition",
+      "Productction"
+    ],
+    "images": [],
+    "sourceOrder": 4
+  },
+  {
+    "id": "sa-05-why-agile",
+    "title": "Why Agile",
+    "prompt": "简述 / 列举 Why Agile 的核心要点。",
+    "group": "过程与敏捷",
+    "points": [
+      "Effective respnse to change/communication",
+      "Driven by customers' requirement",
+      "Self-organization",
+      "Rapid incremental delivery"
+    ],
+    "images": [],
+    "sourceOrder": 5
+  },
+  {
+    "id": "sa-06-framework-activities-found-in-the-xp",
+    "title": "Framework activities found in the XP process model",
+    "prompt": "简述 / 列举 Framework activities found in the XP process model 的核心要点。",
+    "group": "过程与敏捷",
+    "points": [
+      "Planning",
+      "Design",
+      "Coding",
+      "Testing"
+    ],
+    "images": [],
+    "sourceOrder": 6
+  },
+  {
+    "id": "sa-07-requirements-engineering-tasks",
+    "title": "Requirements Engineering Tasks",
+    "prompt": "简述 / 列举 Requirements Engineering Tasks 的核心要点。",
+    "group": "需求与分析",
+    "points": [
+      "Inception:对项目建立基本的理解(context free questions)",
+      "Elicitation:询问客户的需求(Normal Expected Exciting Req/ Non-Functional Req)",
+      "Elabotation:建立需求模型",
+      "Negotiation:参与各方均能达到一定的满意度",
+      "Monitoring",
+      "Specification",
+      "Validation",
+      "Management"
+    ],
+    "images": [],
+    "sourceOrder": 7
+  },
+  {
+    "id": "sa-08-analysis-models",
+    "title": "Analysis Models",
+    "prompt": "简述 / 列举 Analysis Models 的核心要点。",
+    "group": "需求与分析",
+    "points": [
+      "Scenaria-based elements:各种UML diagram(use-case diagram/activity diagram/swim lane diagram)",
+      "Behavioral elements:state diagram",
+      "Flow-oriented elements:data flow diagram",
+      "Class-based elements:class diagram/crc models"
+    ],
+    "images": [],
+    "sourceOrder": 8
+  },
+  {
+    "id": "sa-09-the-four-design-models",
+    "title": "the four design models",
+    "prompt": "简述 the four design models 的核心要点。",
+    "group": "设计与 WebApp",
+    "points": [
+      "Data/Class design",
+      "Architectural design",
+      "Interface design",
+      "Component-level design"
+    ],
+    "images": [],
+    "sourceOrder": 9
+  },
+  {
+    "id": "sa-10-four-architechtural-style",
+    "title": "Four Architechtural Style",
+    "prompt": "简述 / 列举 Four Architechtural Style 的核心要点。",
+    "group": "设计与 WebApp",
+    "points": [
+      "Data-Centered",
+      "Data Flow",
+      "Call and Return",
+      "Layered"
+    ],
+    "images": [],
+    "sourceOrder": 10
+  },
+  {
+    "id": "sa-11-7-basic-design-principles",
+    "title": "7 Basic Design Principles",
+    "prompt": "简述 / 列举 7 Basic Design Principles 的核心要点。",
+    "group": "设计与 WebApp",
+    "points": [
+      "Open-Closed Principle:开放扩展，关闭修改",
+      "Liskov Substitution Principle:子类可以被父类替换",
+      "Dependency Inversion principle:依赖抽象",
+      "Interface Segregation Principle:接口隔离(客户端对应specific interface)",
+      "Release Reuse Equivalency Principle:发布的粒度是重用的粒度",
+      "Common Closure Principle:一起变的类在一起",
+      "Common Reuse Principle:不一起重用的类在一起"
+    ],
+    "images": [],
+    "sourceOrder": 11
+  },
+  {
+    "id": "sa-12-3-ui-golden-rules",
+    "title": "3 UI Golden Rules",
+    "prompt": "简述 / 列举 3 UI Golden Rules 的核心要点。",
+    "group": "设计与 WebApp",
+    "points": [
+      "Place users in the control",
+      "Reduce the users' memory load",
+      "Make the interface easier"
+    ],
+    "images": [],
+    "sourceOrder": 12
+  },
+  {
+    "id": "sa-13-4-interface-analysis-and-design-mode",
+    "title": "4 Interface Analysis and Design Models",
+    "prompt": "简述 / 列举 4 Interface Analysis and Design Models 的核心要点。",
+    "group": "设计与 WebApp",
+    "points": [
+      "User Model",
+      "Design Model",
+      "System Perception",
+      "Implementation Model"
+    ],
+    "images": [],
+    "sourceOrder": 13
+  },
+  {
+    "id": "sa-14-6-design-goals",
+    "title": "6 Design Goals",
+    "prompt": "简述 / 列举 6 Design Goals 的核心要点。",
+    "group": "设计与 WebApp",
+    "points": [
+      "Simpilicity",
+      "Consistency",
+      "Robustness",
+      "Navigability",
+      "Visual Appeal",
+      "Compalibility"
+    ],
+    "images": [],
+    "sourceOrder": 14
+  },
+  {
+    "id": "sa-15-webapp-design-pyramid",
+    "title": "WebApp Design Pyramid",
+    "prompt": "简述 / 列举 WebApp Design Pyramid 的核心要点。",
+    "group": "设计与 WebApp",
+    "points": [],
+    "images": [
+      {
+        "alt": "设计金字塔",
+        "src": "/short-answer-images/image-18.png"
+      }
+    ],
+    "sourceOrder": 15
+  },
+  {
+    "id": "sa-16-design-mistakes",
+    "title": "Design Mistakes",
+    "prompt": "简述 Design Mistakes 的核心要点。",
+    "group": "设计与 WebApp",
+    "points": [
+      "kitchen sink",
+      "overdesigning",
+      "non-standard interaction",
+      "lack of speed"
+    ],
+    "images": [],
+    "sourceOrder": 16
+  },
+  {
+    "id": "sa-17-4-interface-design-issues",
+    "title": "4 interface design issues",
+    "prompt": "简述 / 列举 4 interface design issues 的核心要点。",
+    "group": "设计与 WebApp",
+    "points": [
+      "System response time",
+      "User help facilities",
+      "Error information handling",
+      "Menu and command labeling",
+      "Application accessibility",
+      "Internationalization"
+    ],
+    "images": [],
+    "sourceOrder": 17
+  },
+  {
+    "id": "sa-18-six-sigma",
+    "title": "six sigma",
+    "prompt": "简述 / 列举 six sigma 的核心要点。",
+    "group": "质量、度量与测试",
+    "points": [
+      "Define",
+      "Measure",
+      "Analyze",
+      "improve",
+      "control"
+    ],
+    "images": [],
+    "sourceOrder": 18
+  },
+  {
+    "id": "sa-19-good-test",
+    "title": "good test",
+    "prompt": "简述 / 列举 good test 的核心要点。",
+    "group": "质量、度量与测试",
+    "points": [
+      "has a high probability of finding an error",
+      "not redundant",
+      "best of breed",
+      "neither too simple nor too complex"
+    ],
+    "images": [],
+    "sourceOrder": 19
+  },
+  {
+    "id": "sa-20-stakeholder",
+    "title": "Stakeholder",
+    "prompt": "简述 / 列举 Stakeholder 的核心要点。",
+    "group": "团队、风险与维护",
+    "points": [
+      "Senior Manager",
+      "Project Manager",
+      "Practitioner",
+      "Customer",
+      "End Use"
+    ],
+    "images": [],
+    "sourceOrder": 20
+  },
+  {
+    "id": "sa-21-team-toxicity",
+    "title": "Team toxicity",
+    "prompt": "简述 / 列举 Team toxicity 的核心要点。",
+    "group": "团队、风险与维护",
+    "points": [
+      "Frenzied atmosphere",
+      "Unclear role",
+      "Not coordinated process",
+      "High frastration",
+      "Continous exposure to failure"
+    ],
+    "images": [],
+    "sourceOrder": 21
+  },
+  {
+    "id": "sa-22-rmmm",
+    "title": "RMMM",
+    "prompt": "简述 / 列举 RMMM 的核心要点。",
+    "group": "团队、风险与维护",
+    "points": [
+      "Risk Mitigation:How can we avoid the risks",
+      "Risk Monitoring:What factor to track to determine whether the risk is becoming real",
+      "Risk Management:What contingency plan do we have?"
+    ],
+    "images": [],
+    "sourceOrder": 22
+  },
+  {
+    "id": "sa-23-software-reengineering",
+    "title": "Software Reengineering",
+    "prompt": "简述 / 列举 Software Reengineering 的核心要点。",
+    "group": "团队、风险与维护",
+    "points": [
+      "Inventory Analysis",
+      "Document Reconstructing",
+      "Reverse Engineering",
+      "Code Reconstructing",
+      "Data Reconstructing",
+      "Forward Engineering"
+    ],
+    "images": [
+      {
+        "alt": "软件再工程",
+        "src": "/short-answer-images/image-19.png"
+      }
+    ],
+    "sourceOrder": 23
+  },
+  {
+    "id": "sa-24-3-requirements-in-qfd",
+    "title": "3 Requirements in QFD",
+    "prompt": "简述 / 列举 3 Requirements in QFD 的核心要点。",
+    "group": "需求与分析",
+    "points": [
+      "Normal requirements",
+      "Expected requirements",
+      "Exciting requirements"
+    ],
+    "images": [],
+    "sourceOrder": 24
+  },
+  {
+    "id": "sa-25-good-software-design",
+    "title": "Good Software Design",
+    "prompt": "简述 / 列举 Good Software Design 的核心要点。",
+    "group": "设计与 WebApp",
+    "points": [
+      "Firmness",
+      "Commadity",
+      "Delight"
+    ],
+    "images": [],
+    "sourceOrder": 25
+  },
+  {
+    "id": "sa-26-2-formal-modeling-and-verification-m",
+    "title": "2 Formal Modeling and Verification Method",
+    "prompt": "简述 / 列举 2 Formal Modeling and Verification Method 的核心要点。",
+    "group": "质量、度量与测试",
+    "points": [
+      "Cleanroom software engineering",
+      "Formal methods"
+    ],
+    "images": [],
+    "sourceOrder": 26
+  },
+  {
+    "id": "sa-27-loc",
+    "title": "LOC",
+    "prompt": "简述 / 列举 LOC 的核心要点。",
+    "group": "质量、度量与测试",
+    "points": [
+      "Easy to compute",
+      "Easy to understand",
+      "Based on historical data",
+      "Useful after implementation"
+    ],
+    "images": [],
+    "sourceOrder": 27
+  },
+  {
+    "id": "sa-28-fp",
+    "title": "FP",
+    "prompt": "简述 / 列举 FP 的核心要点。",
+    "group": "质量、度量与测试",
+    "points": [
+      "Programming language independent",
+      "Can be determined early in the software process",
+      "Does not pernalize inventive short implementations",
+      "Easier to measure impact of reusable components"
+    ],
+    "images": [],
+    "sourceOrder": 28
+  },
+  {
+    "id": "sa-29-webapp-2-basic-approaches",
+    "title": "WebApp 2 basic approaches",
+    "prompt": "简述 / 列举 WebApp 2 basic approaches 的核心要点。",
+    "group": "设计与 WebApp",
+    "points": [
+      "Artistic ideal",
+      "Engineering ideal"
+    ],
+    "images": [],
+    "sourceOrder": 29
+  },
+  {
+    "id": "sa-30-2-software-risk-characteristics",
+    "title": "2 Software Risk Characteristics",
+    "prompt": "简述 / 列举 2 Software Risk Characteristics 的核心要点。",
+    "group": "质量、度量与测试",
+    "points": [
+      "Loss",
+      "Uncertainty"
+    ],
+    "images": [],
+    "sourceOrder": 30
+  },
+  {
+    "id": "sa-31-why-does-software-need-to-evolve-ove",
+    "title": "Why does software need to evolve over time?",
+    "prompt": "Why does software need to evolve over time?",
+    "group": "需求与分析",
+    "points": [
+      "用户发现 bug，需要修复；",
+      "用户需求变化，需要增加或修改功能；",
+      "业务环境变化，需要适应新的业务规则；",
+      "技术环境变化，比如 OS、硬件、数据库、浏览器、接口变化；",
+      "为了提高质量、性能、可维护性，也需要演化。"
+    ],
+    "images": [],
+    "sourceOrder": 31
+  },
+  {
+    "id": "sa-32-three-primary-objectives-of-the-anal",
+    "title": "three primary objectives of the analysis model",
+    "prompt": "简述 / 列举 three primary objectives of the analysis model 的核心要点。",
+    "group": "需求与分析",
+    "points": [
+      "To describe what the customer requires.",
+      "To establish a basis for the creation of a software design.",
+      "To define a set of requirements that can be validated once the software is built."
+    ],
+    "images": [],
+    "sourceOrder": 32
+  },
+  {
+    "id": "sa-33-4-types-of-system-tests",
+    "title": "4 types of system tests",
+    "prompt": "简述 / 列举 4 types of system tests 的核心要点。",
+    "group": "质量、度量与测试",
+    "points": [
+      "recovery testing",
+      "security testing",
+      "stress testing",
+      "performance testing"
+    ],
+    "images": [],
+    "sourceOrder": 33
+  },
+  {
+    "id": "sa-34-scrum-meeting-3-questions",
+    "title": "Scrum Meeting 3 Questions",
+    "prompt": "简述 / 列举 Scrum Meeting 3 Questions 的核心要点。",
+    "group": "团队、风险与维护",
+    "points": [
+      "What did I do yesterday?",
+      "What will I do today?",
+      "What obstacles are blocking my work?"
+    ],
+    "images": [],
+    "sourceOrder": 34
+  }
+]

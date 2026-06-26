@@ -1,1 +1,9 @@
 .vercel
+.next
+.quiz-data
+node_modules
+out
+dist
+*.tsbuildinfo
+.env*
+!.env.example
